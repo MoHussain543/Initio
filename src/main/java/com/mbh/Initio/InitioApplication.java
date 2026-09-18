@@ -1,13 +1,14 @@
 package com.mbh.Initio;
 
-import org.springframework.boot.SpringApplication;
+import com.mbh.Initio.cli.InitioCommand;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import picocli.CommandLine;
 
 @SpringBootApplication
 public class InitioApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(InitioApplication.class, args);
+		int code = new CommandLine(new InitioCommand()).execute(args);
+		System.exit(code);
 	}
-
 }
