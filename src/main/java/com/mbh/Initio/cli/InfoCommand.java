@@ -5,7 +5,9 @@ import com.mbh.Initio.cli.format.InfoReportFormatter;
 import com.mbh.Initio.detector.DetectionException;
 import com.mbh.Initio.model.ProjectAnalysis;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Parameters;
+import picocli.CommandLine.Spec;
 
 import java.nio.file.Path;
 import java.util.concurrent.Callable;
@@ -15,6 +17,9 @@ import java.util.concurrent.Callable;
 		description = "Show detected project information."
 )
 public class InfoCommand implements Callable<Integer> {
+
+	@Spec
+	private CommandSpec spec;
 
 	@Parameters(
 			index = "0",
@@ -28,10 +33,10 @@ public class InfoCommand implements Callable<Integer> {
 		try {
 			Path projectPath = ProjectPathResolver.resolve(path);
 			ProjectAnalysis analysis = ProjectAnalyzers.create().analyze(projectPath);
-			new InfoReportFormatter().write(analysis, System.out);
+			new InfoReportFormatter().write(analysis, spec.commandLine().getOut());
 			return 0;
 		} catch (IllegalArgumentException | DetectionException exception) {
-			System.err.println(exception.getMessage());
+			spec.commandLine().getErr().println(exception.getMessage());
 			return 1;
 		}
 	}

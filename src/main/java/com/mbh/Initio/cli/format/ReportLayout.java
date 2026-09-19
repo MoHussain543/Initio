@@ -1,6 +1,6 @@
 package com.mbh.Initio.cli.format;
 
-import java.io.PrintStream;
+import java.io.PrintWriter;
 
 public final class ReportLayout {
 
@@ -9,12 +9,12 @@ public final class ReportLayout {
 	private ReportLayout() {
 	}
 
-	public static void section(PrintStream out, String title) {
+	public static void section(PrintWriter out, String title) {
 		out.println(title);
 		out.println(DIVIDER);
 	}
 
-	public static void blank(PrintStream out) {
+	public static void blank(PrintWriter out) {
 		out.println();
 	}
 }

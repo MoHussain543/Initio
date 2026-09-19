@@ -4,13 +4,13 @@ import com.mbh.Initio.model.DetectedTechnology;
 import com.mbh.Initio.model.ProjectAnalysis;
 import com.mbh.Initio.model.RuntimeRequirement;
 
-import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.util.Comparator;
 import java.util.List;
 
 public final class CheckReportFormatter {
 
-	public void write(ProjectAnalysis analysis, PrintStream out) {
+	public void write(ProjectAnalysis analysis, PrintWriter out) {
 		out.println("INITIO");
 		ReportLayout.blank(out);
 		out.println("Project: " + analysis.metadata().name());

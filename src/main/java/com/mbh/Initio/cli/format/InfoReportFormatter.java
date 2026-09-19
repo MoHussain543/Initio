@@ -4,12 +4,12 @@ import com.mbh.Initio.model.DetectedTechnology;
 import com.mbh.Initio.model.ProjectAnalysis;
 import com.mbh.Initio.model.TechnologyCategory;
 
-import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.util.List;
 
 public final class InfoReportFormatter {
 
-	public void write(ProjectAnalysis analysis, PrintStream out) {
+	public void write(ProjectAnalysis analysis, PrintWriter out) {
 		out.println("Project");
 		out.println(analysis.metadata().name());
 
@@ -20,7 +20,7 @@ public final class InfoReportFormatter {
 		writeSection(out, "Tools", analysis.technologies(TechnologyCategory.TOOL));
 	}
 
-	private static void writeSection(PrintStream out, String title, List<DetectedTechnology> technologies) {
+	private static void writeSection(PrintWriter out, String title, List<DetectedTechnology> technologies) {
 		if (technologies.isEmpty()) {
 			return;
 		}
