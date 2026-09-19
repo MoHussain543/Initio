@@ -1,7 +1,8 @@
 package com.mbh.Initio.cli;
 
-import com.mbh.Initio.analysis.ProjectAnalyzer;
+import com.mbh.Initio.analysis.ProjectAnalyzers;
 import com.mbh.Initio.cli.format.InfoReportFormatter;
+import com.mbh.Initio.detector.DetectionException;
 import com.mbh.Initio.model.ProjectAnalysis;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
@@ -26,10 +27,10 @@ public class InfoCommand implements Callable<Integer> {
 	public Integer call() {
 		try {
 			Path projectPath = ProjectPathResolver.resolve(path);
-			ProjectAnalysis analysis = new ProjectAnalyzer().analyze(projectPath);
+			ProjectAnalysis analysis = ProjectAnalyzers.create().analyze(projectPath);
 			new InfoReportFormatter().write(analysis, System.out);
 			return 0;
-		} catch (IllegalArgumentException exception) {
+		} catch (IllegalArgumentException | DetectionException exception) {
 			System.err.println(exception.getMessage());
 			return 1;
 		}
