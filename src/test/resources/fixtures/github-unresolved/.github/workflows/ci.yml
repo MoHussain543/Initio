@@ -1,0 +1,13 @@
+name: CI
+
+on:
+  push:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-java@v4
+        with:
+          java-version: ${{ needs.setup.outputs.java }}
+      - run: mvn test

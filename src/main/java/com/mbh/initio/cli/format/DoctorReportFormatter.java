@@ -19,6 +19,15 @@ public final class DoctorReportFormatter {
 		out.println("Path: " + project.projectPath());
 		ReportLayout.blank(out);
 
+		ReportLayout.section(out, "Readiness");
+		if (result.readiness().scored()) {
+			out.println("Project readiness: " + result.readiness().percent() + "%");
+		} else {
+			out.println("Project readiness: Unknown");
+		}
+		out.println(result.readiness().summary());
+		ReportLayout.blank(out);
+
 		List<DiagnosticIssue> issues = orderedIssues(result.issues());
 		ReportLayout.section(out, "Issues");
 		if (issues.isEmpty()) {

@@ -50,7 +50,8 @@ public final class DeclarationDriftRule implements DiagnosticRule {
 				DiagnosticRuleId.DECLARATION_DRIFT,
 				DiagnosticSeverity.WARNING,
 				"Conflicting Node engine declarations",
-				detail
+				detail,
+				nodeRequirements.getFirst().source().file()
 		));
 	}
 
@@ -80,7 +81,8 @@ public final class DeclarationDriftRule implements DiagnosticRule {
 				DiagnosticRuleId.DECLARATION_DRIFT,
 				DiagnosticSeverity.WARNING,
 				"Conflicting Java versions",
-				detail
+				detail,
+				javaRequirements.getFirst().source().file()
 		));
 	}
 
@@ -110,7 +112,8 @@ public final class DeclarationDriftRule implements DiagnosticRule {
 				DiagnosticRuleId.DECLARATION_DRIFT,
 				DiagnosticSeverity.WARNING,
 				"Conflicting Node versions between repo and CI",
-				String.join(System.lineSeparator() + System.lineSeparator(), mismatches)
+				String.join(System.lineSeparator() + System.lineSeparator(), mismatches),
+				nodeRequirements.getFirst().source().file()
 		));
 	}
 
@@ -158,7 +161,8 @@ public final class DeclarationDriftRule implements DiagnosticRule {
 					DiagnosticRuleId.DECLARATION_DRIFT,
 					DiagnosticSeverity.WARNING,
 					"Configured " + label + " requirement conflicts with repository declaration",
-					detail
+					detail,
+					configured.getFirst().source().file()
 			));
 		}
 		return issues;

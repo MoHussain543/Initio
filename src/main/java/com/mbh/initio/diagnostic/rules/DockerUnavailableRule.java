@@ -18,7 +18,10 @@ public final class DockerUnavailableRule implements DiagnosticRule {
 
 	@Override
 	public List<DiagnosticIssue> evaluate(AnalysisContext context) {
-		if (context.project().serviceRequirements().stream().noneMatch(ServiceRequirement::composeBacked)) {
+		Optional<ServiceRequirement> composeRequirement = context.project().serviceRequirements().stream()
+				.filter(ServiceRequirement::composeBacked)
+				.findFirst();
+		if (composeRequirement.isEmpty()) {
 			return List.of();
 		}
 		Optional<InstalledRuntime> docker = context.local().installedRuntime("docker");
@@ -37,7 +40,8 @@ public final class DockerUnavailableRule implements DiagnosticRule {
 				DiagnosticRuleId.DOCKER_UNAVAILABLE,
 				DiagnosticSeverity.ERROR,
 				"Docker is not available",
-				"Install Docker Desktop or the Docker Engine, then run docker compose up for this project"
+				"Install Docker Desktop or the Docker Engine" + System.lineSeparator() + "Run docker compose up",
+				composeRequirement.get().composeFile()
 		));
 		return issues;
 	}

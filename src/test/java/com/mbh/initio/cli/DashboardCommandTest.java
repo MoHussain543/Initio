@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DashboardCommandTest {
@@ -39,6 +40,21 @@ class DashboardCommandTest {
 
 		assertEquals(1, output.exitCode());
 		assertTrue(output.stderr().contains("does not exist"));
+	}
+
+	@Test
+	void dashboardRejectsInvalidHost() {
+		CommandResult output = InitioCli.execute(
+				"dashboard",
+				"--host",
+				"[",
+				FixtureRepositories.springMaven().toString()
+		);
+
+		assertEquals(1, output.exitCode());
+		assertTrue(output.stderr().contains("Initio could not start the dashboard"));
+		assertTrue(output.stderr().contains("not valid"));
+		assertFalse(output.stderr().contains("org.springframework"));
 	}
 
 	@Test

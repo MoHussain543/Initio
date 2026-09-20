@@ -1,9 +1,7 @@
 package com.mbh.initio.detector.spring;
 
-import org.yaml.snakeyaml.Yaml;
+import com.mbh.initio.detector.YamlDocuments;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Objects;
@@ -13,12 +11,7 @@ public final class SpringApplicationYamlParser {
 
 	public Optional<Integer> parseServerPort(Path yamlFile) {
 		Objects.requireNonNull(yamlFile, "yamlFile");
-		try {
-			Object loaded = new Yaml().load(Files.readString(yamlFile));
-			return extractServerPort(loaded);
-		} catch (IOException exception) {
-			return Optional.empty();
-		}
+		return extractServerPort(YamlDocuments.load(yamlFile));
 	}
 
 	private static Optional<Integer> extractServerPort(Object node) {

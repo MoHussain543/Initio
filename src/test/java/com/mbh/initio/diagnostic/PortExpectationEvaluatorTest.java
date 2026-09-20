@@ -59,11 +59,29 @@ class PortExpectationEvaluatorTest {
 
 		PortExpectationEvaluator.Outcome outcome = PortExpectationEvaluator.outcome(
 				expectation,
-				Optional.of(PortObservation.free(5432)),
+				Optional.of(PortObservation.listening(5432, "postgres")),
 				Optional.of(ServiceStatus.running("postgres"))
 		);
 
 		assertEquals(PortExpectationEvaluator.Outcome.IN_USE_BY_EXPECTED_SERVICE, outcome);
+	}
+
+	@Test
+	void doesNotTrustComposeRunningStateWhenThePortIsActuallyFree() {
+		PortExpectation expectation = new PortExpectation(
+				5432,
+				PortRole.EXPECTED_SERVICE,
+				"postgres (postgres:16)",
+				SOURCE
+		);
+
+		PortExpectationEvaluator.Outcome outcome = PortExpectationEvaluator.outcome(
+				expectation,
+				Optional.of(PortObservation.free(5432)),
+				Optional.of(ServiceStatus.running("postgres"))
+		);
+
+		assertEquals(PortExpectationEvaluator.Outcome.NOT_IN_USE, outcome);
 	}
 
 	@Test

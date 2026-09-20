@@ -31,9 +31,10 @@ public final class RuntimeRequirementEvaluator {
 		if (requiredVersion == null || requiredVersion.isBlank()) {
 			return Outcome.SATISFIED;
 		}
-		if (!VersionMatcher.satisfies(runtime.detectedVersion(), requiredVersion)) {
-			return Outcome.INCOMPATIBLE;
-		}
-		return Outcome.SATISFIED;
+		return switch (VersionMatcher.match(runtime.detectedVersion(), requiredVersion)) {
+			case COMPATIBLE -> Outcome.SATISFIED;
+			case INCOMPATIBLE -> Outcome.INCOMPATIBLE;
+			case UNKNOWN -> Outcome.UNVERIFIED;
+		};
 	}
 }

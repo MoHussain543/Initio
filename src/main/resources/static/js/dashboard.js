@@ -95,17 +95,20 @@
   }
 
   function renderReadiness(readiness) {
-    const score = typeof readiness.score === "number" ? readiness.score : 0;
+    const scored = typeof readiness.score === "number";
+    const score = scored ? readiness.score : null;
     const summary = readiness.summary || "";
     const issueCount = typeof readiness.issueCount === "number" ? readiness.issueCount : 0;
+    const scoreLabel = scored ? escapeHtml(String(score)) + "%" : "Unknown";
+    const fill = scored ? Math.min(100, Math.max(0, score)) : 0;
 
     readinessBody.innerHTML =
       '<div class="readiness-score" aria-label="Readiness score">' +
-      escapeHtml(String(score)) +
-      "%</div>" +
+      scoreLabel +
+      "</div>" +
       '<div class="progress-track" aria-hidden="true">' +
       '<div class="progress-fill" style="width:' +
-      Math.min(100, Math.max(0, score)) +
+      fill +
       '%"></div></div>' +
       (summary ? '<p class="readiness-summary">' + escapeHtml(summary) + "</p>" : "") +
       '<p class="readiness-meta">' + escapeHtml(formatIssueMeta(issueCount)) + "</p>";
@@ -283,9 +286,15 @@
       issues
         .map((issue) => {
           const severity = (issue.severity || "INFO").toLowerCase();
-          const copyText = issue.copyText || "";
+          const copyText = issue.copyText || issue.suggestedAction || "";
+          const sources = Array.isArray(issue.sources) ? issue.sources : [];
           const copyButton = copyText
-            ? copyButtonHtml(copyText, "Copy fix")
+            ? copyButtonHtml(copyText, "Copy")
+            : "";
+          const sourceHtml = sources.length
+            ? '<p class="issue-source">' +
+              sources.map((source) => escapeHtml(String(source))).join(" · ") +
+              "</p>"
             : "";
           return (
             '<li class="issue-card issue-card--' +
@@ -297,12 +306,16 @@
             '">' +
             escapeHtml(issue.severity || "INFO") +
             "</span>" +
+            (issue.ruleId
+              ? '<span class="issue-rule">' + escapeHtml(issue.ruleId) + "</span>"
+              : "") +
             '<h3 class="issue-title">' +
             escapeHtml(issue.title) +
             "</h3></div>" +
             '<p class="issue-detail">' +
             escapeHtml(issue.detail) +
             "</p>" +
+            sourceHtml +
             (copyButton ? '<div class="issue-actions">' + copyButton + "</div>" : "") +
             "</li>"
           );

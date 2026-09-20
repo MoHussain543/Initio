@@ -2,6 +2,7 @@ package com.mbh.initio.model;
 
 import com.mbh.initio.diagnostic.DiagnosticRuleId;
 
+import java.nio.file.Path;
 import java.util.Objects;
 
 public record DiagnosticIssue(
@@ -10,7 +11,8 @@ public record DiagnosticIssue(
 		String title,
 		String detail,
 		String environmentName,
-		Integer port
+		Integer port,
+		Path sourceFile
 ) {
 	public DiagnosticIssue {
 		Objects.requireNonNull(ruleId, "ruleId");
@@ -23,7 +25,17 @@ public record DiagnosticIssue(
 	}
 
 	public DiagnosticIssue(DiagnosticRuleId ruleId, DiagnosticSeverity severity, String title, String detail) {
-		this(ruleId, severity, title, detail, null, null);
+		this(ruleId, severity, title, detail, null, null, null);
+	}
+
+	public DiagnosticIssue(
+			DiagnosticRuleId ruleId,
+			DiagnosticSeverity severity,
+			String title,
+			String detail,
+			Path sourceFile
+	) {
+		this(ruleId, severity, title, detail, null, null, sourceFile);
 	}
 
 	public static DiagnosticIssue forEnvironment(
@@ -33,13 +45,25 @@ public record DiagnosticIssue(
 			String detail,
 			String environmentName
 	) {
+		return forEnvironment(ruleId, severity, title, detail, environmentName, null);
+	}
+
+	public static DiagnosticIssue forEnvironment(
+			DiagnosticRuleId ruleId,
+			DiagnosticSeverity severity,
+			String title,
+			String detail,
+			String environmentName,
+			Path sourceFile
+	) {
 		return new DiagnosticIssue(
 				ruleId,
 				severity,
 				title,
 				detail,
 				Objects.requireNonNull(environmentName, "environmentName"),
-				null
+				null,
+				sourceFile
 		);
 	}
 
@@ -50,6 +74,17 @@ public record DiagnosticIssue(
 			String detail,
 			int port
 	) {
-		return new DiagnosticIssue(ruleId, severity, title, detail, null, port);
+		return forPort(ruleId, severity, title, detail, port, null);
+	}
+
+	public static DiagnosticIssue forPort(
+			DiagnosticRuleId ruleId,
+			DiagnosticSeverity severity,
+			String title,
+			String detail,
+			int port,
+			Path sourceFile
+	) {
+		return new DiagnosticIssue(ruleId, severity, title, detail, null, port, sourceFile);
 	}
 }

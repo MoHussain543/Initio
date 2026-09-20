@@ -26,6 +26,8 @@ class CommandsCommandTest {
 		assertTrue(output.stdout().contains("INITIO"));
 		assertTrue(output.stdout().contains("mvn test"));
 		assertTrue(output.stdout().contains("Suggested (Maven convention)"));
+		assertTrue(output.stdout().contains("npm run dev"));
+		assertTrue(output.stdout().contains("npm run build"));
 	}
 
 	@Test
@@ -34,6 +36,7 @@ class CommandsCommandTest {
 
 		assertEquals(0, output.exitCode());
 		assertTrue(output.stdout().contains("npm run dev"));
+		assertTrue(output.stdout().contains("npm run seed-db"));
 		assertTrue(output.stdout().contains("Declared"));
 	}
 

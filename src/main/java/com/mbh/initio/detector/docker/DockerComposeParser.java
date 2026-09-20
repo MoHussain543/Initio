@@ -1,10 +1,7 @@
 package com.mbh.initio.detector.docker;
 
-import com.mbh.initio.detector.DetectionException;
-import org.yaml.snakeyaml.Yaml;
+import com.mbh.initio.detector.YamlDocuments;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -17,30 +14,25 @@ public final class DockerComposeParser {
 
 	public List<ComposeServiceDefinition> parseServices(Path composeFile) {
 		Objects.requireNonNull(composeFile, "composeFile");
-		try {
-			String content = Files.readString(composeFile);
-			Object loaded = new Yaml().load(content);
-			if (!(loaded instanceof Map<?, ?> root)) {
-				return List.of();
-			}
-			Object servicesNode = root.get("services");
-			if (!(servicesNode instanceof Map<?, ?> services)) {
-				return List.of();
-			}
-			List<ComposeServiceDefinition> definitions = new ArrayList<>();
-			for (Map.Entry<?, ?> entry : services.entrySet()) {
-				String serviceName = String.valueOf(entry.getKey());
-				if (!(entry.getValue() instanceof Map<?, ?> serviceMap)) {
-					continue;
-				}
-				String image = text(serviceMap.get("image"));
-				List<Integer> ports = parsePorts(serviceMap.get("ports"));
-				definitions.add(new ComposeServiceDefinition(serviceName, image, ports));
-			}
-			return List.copyOf(definitions);
-		} catch (IOException exception) {
-			throw new DetectionException("Unable to read " + composeFile.getFileName() + ".", exception);
+		Object loaded = YamlDocuments.load(composeFile);
+		if (!(loaded instanceof Map<?, ?> root)) {
+			return List.of();
 		}
+		Object servicesNode = root.get("services");
+		if (!(servicesNode instanceof Map<?, ?> services)) {
+			return List.of();
+		}
+		List<ComposeServiceDefinition> definitions = new ArrayList<>();
+		for (Map.Entry<?, ?> entry : services.entrySet()) {
+			String serviceName = String.valueOf(entry.getKey());
+			if (!(entry.getValue() instanceof Map<?, ?> serviceMap)) {
+				continue;
+			}
+			String image = text(serviceMap.get("image"));
+			List<Integer> ports = parsePorts(serviceMap.get("ports"));
+			definitions.add(new ComposeServiceDefinition(serviceName, image, ports));
+		}
+		return List.copyOf(definitions);
 	}
 
 	private static String text(Object value) {
@@ -51,7 +43,7 @@ public final class DockerComposeParser {
 		return text.isEmpty() ? null : text;
 	}
 
-	private static List<Integer> parsePorts(Object portsNode) {
+	static List<Integer> parsePorts(Object portsNode) {
 		if (portsNode == null) {
 			return List.of();
 		}
@@ -67,15 +59,16 @@ public final class DockerComposeParser {
 	}
 
 	private static void parsePortEntry(Object entry, Set<Integer> ports) {
-		if (entry instanceof Number number) {
-			ports.add(number.intValue());
+		if (entry instanceof Map<?, ?> map) {
+			Integer published = publishedHostPort(map.get("published"));
+			if (published != null) {
+				ports.add(published);
+			}
 			return;
 		}
-		if (entry instanceof Map<?, ?> map) {
-			Object published = map.get("published");
-			if (published instanceof Number publishedNumber) {
-				ports.add(publishedNumber.intValue());
-			}
+		if (entry instanceof Number) {
+			// A bare number (e.g. "ports: - 3000") publishes to a random ephemeral host port,
+			// not a known, fixed one, so it cannot be treated as a published host port.
 			return;
 		}
 		if (entry == null) {
@@ -87,6 +80,23 @@ public final class DockerComposeParser {
 		}
 	}
 
+	private static Integer publishedHostPort(Object published) {
+		if (published instanceof Integer integer) {
+			return validPort(integer);
+		}
+		if (published instanceof Long longValue && longValue >= 1 && longValue <= 65535) {
+			return longValue.intValue();
+		}
+		if (published instanceof String text) {
+			return parsePortSegment(text);
+		}
+		return null;
+	}
+
+	private static Integer validPort(int port) {
+		return port > 0 && port <= 65535 ? port : null;
+	}
+
 	static Integer hostPortFromString(String specification) {
 		String trimmed = specification.trim();
 		if (trimmed.isEmpty()) {
@@ -94,7 +104,8 @@ public final class DockerComposeParser {
 		}
 		String[] segments = trimmed.split(":");
 		if (segments.length == 1) {
-			return parsePortSegment(segments[0]);
+			// A single segment (e.g. "3000") has no host port; Docker assigns a random one.
+			return null;
 		}
 		if (segments.length == 2) {
 			return parsePortSegment(segments[0]);
@@ -108,6 +119,6 @@ public final class DockerComposeParser {
 			return null;
 		}
 		int port = Integer.parseInt(digits);
-		return port > 0 && port <= 65535 ? port : null;
+		return validPort(port);
 	}
 }

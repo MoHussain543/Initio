@@ -44,4 +44,16 @@ class DefaultEnvironmentProviderTest {
 
 		assertEquals(PresenceStatus.EMPTY, status.presence());
 	}
+
+	@Test
+	void scannerReturnsPresenceWithoutRetainingValues(@TempDir Path tempDir) throws Exception {
+		Files.writeString(tempDir.resolve(".env"), "JWT_SECRET=super-secret-value-should-not-escape\n");
+
+		assertEquals(DotEnvPresenceScanner.KeyState.HAS_VALUE, DotEnvPresenceScanner.keyState(tempDir.resolve(".env"), "JWT_SECRET"));
+		assertEquals(DotEnvPresenceScanner.KeyState.EMPTY, DotEnvPresenceScanner.keyState(
+				Files.writeString(tempDir.resolve("empty.env"), "JWT_SECRET=\n"),
+				"JWT_SECRET"
+		));
+		assertEquals(DotEnvPresenceScanner.KeyState.NOT_FOUND, DotEnvPresenceScanner.keyState(tempDir.resolve(".env"), "MISSING"));
+	}
 }

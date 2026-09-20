@@ -77,6 +77,26 @@ public final class FixtureRepositories {
 		return resolve("config-suppression");
 	}
 
+	public static Path malformedCompose() {
+		return resolve("malformed-compose");
+	}
+
+	public static Path malformedSpringYaml() {
+		return resolve("malformed-spring-yaml");
+	}
+
+	public static Path malformedGitHubActionsYaml() {
+		return resolve("malformed-gha-yaml");
+	}
+
+	public static Path githubMatrix() {
+		return resolve("github-matrix");
+	}
+
+	public static Path githubUnresolved() {
+		return resolve("github-unresolved");
+	}
+
 	private static Path resolve(String name) {
 		URL resource = FixtureRepositories.class.getResource("/fixtures/" + name);
 		if (resource == null) {

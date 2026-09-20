@@ -6,7 +6,10 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "vite build"
+    "build": "vite build",
+    "seed-db": "node scripts/seed.js",
+    "integration": "vitest run --config integration.config.ts",
+    "generate-client": "openapi-generator-cli generate"
   },
   "devDependencies": {
     "typescript": "5.8.2",

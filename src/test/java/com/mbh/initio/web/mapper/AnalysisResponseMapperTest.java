@@ -21,7 +21,7 @@ class AnalysisResponseMapperTest {
 		var response = mapper.toResponse(result);
 
 		assertEquals("Spring Maven Demo", response.project().name());
-		assertTrue(response.readiness().score() >= 0);
+		assertTrue(response.readiness().score() == null || response.readiness().score() >= 0);
 		assertFalse(response.commands().isEmpty());
 	}
 
@@ -36,6 +36,11 @@ class AnalysisResponseMapperTest {
 			assertFalse(row.name().isBlank());
 			assertFalse(row.status().isBlank());
 		}
+		assertTrue(response.issues().stream().anyMatch(issue ->
+				"MISSING_ENVIRONMENT_VARIABLE".equals(issue.ruleId())
+						&& issue.sources().contains("JWT_SECRET")
+						&& issue.suggestedAction() == null
+		));
 	}
 
 	@Test

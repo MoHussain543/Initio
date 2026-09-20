@@ -20,7 +20,8 @@ final class NpmScriptCommands {
 			"preview", CommandCategory.DEV,
 			"build", CommandCategory.BUILD,
 			"test", CommandCategory.TEST,
-			"lint", CommandCategory.OTHER
+			"lint", CommandCategory.OTHER,
+			"format", CommandCategory.OTHER
 	);
 
 	private NpmScriptCommands() {
@@ -30,10 +31,10 @@ final class NpmScriptCommands {
 		List<ProjectCommand> commands = new ArrayList<>();
 		Map<String, CommandCategory> ordered = new LinkedHashMap<>();
 		for (String scriptName : scriptNames) {
-			if (!SCRIPT_CATEGORIES.containsKey(scriptName)) {
+			if (scriptName == null || scriptName.isBlank()) {
 				continue;
 			}
-			ordered.putIfAbsent(scriptName, SCRIPT_CATEGORIES.get(scriptName));
+			ordered.putIfAbsent(scriptName, SCRIPT_CATEGORIES.getOrDefault(scriptName, CommandCategory.OTHER));
 		}
 		for (Map.Entry<String, CommandCategory> entry : ordered.entrySet()) {
 			String scriptName = entry.getKey();

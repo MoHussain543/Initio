@@ -5,6 +5,7 @@ import com.mbh.initio.model.CommandCategory;
 import com.mbh.initio.model.DetectedTechnology;
 import com.mbh.initio.model.ProjectAnalysis;
 import com.mbh.initio.model.ProjectCommand;
+import com.mbh.initio.model.RuntimeRequirement;
 import com.mbh.initio.model.ServiceRequirement;
 import com.mbh.initio.model.TechnologyCategory;
 
@@ -29,8 +30,9 @@ public final class InfoReportFormatter {
 	public void write(ProjectAnalysis analysis, PrintWriter out) {
 		out.println("Project");
 		out.println(analysis.metadata().name());
+		out.println("Path: " + analysis.projectPath());
 
-		writeSection(out, "Languages", analysis.technologies(TechnologyCategory.LANGUAGE));
+		writeLanguagesSection(out, analysis);
 		writeSection(out, "Frameworks", analysis.technologies(TechnologyCategory.FRAMEWORK));
 		writeSection(out, "Build tools", analysis.technologies(TechnologyCategory.BUILD_TOOL));
 		writeSection(out, "Package managers", analysis.technologies(TechnologyCategory.PACKAGE_MANAGER));
@@ -38,6 +40,30 @@ public final class InfoReportFormatter {
 		writeComposeServices(out, analysis);
 		writeCiSection(out, analysis);
 		writeCommandsSummary(out, analysis);
+	}
+
+	private static void writeLanguagesSection(PrintWriter out, ProjectAnalysis analysis) {
+		List<DetectedTechnology> languages = analysis.technologies(TechnologyCategory.LANGUAGE);
+		if (languages.isEmpty()) {
+			return;
+		}
+		ReportLayout.blank(out);
+		out.println("Languages");
+		for (DetectedTechnology language : languages) {
+			String version = declaredVersion(analysis, language.name());
+			out.println(version == null ? language.name() : language.name() + " " + version);
+		}
+	}
+
+	private static String declaredVersion(ProjectAnalysis analysis, String languageName) {
+		for (RuntimeRequirement requirement : analysis.runtimeRequirements()) {
+			if (requirement.runtime().equalsIgnoreCase(languageName)
+					&& requirement.requiredVersion() != null
+					&& !requirement.requiredVersion().isBlank()) {
+				return requirement.requiredVersion();
+			}
+		}
+		return null;
 	}
 
 	private static void writeComposeServices(PrintWriter out, ProjectAnalysis analysis) {

@@ -1,6 +1,8 @@
 spring:
   application:
     name: Initio
+  main:
+    banner-mode: off
 
 server:
   port: 7331

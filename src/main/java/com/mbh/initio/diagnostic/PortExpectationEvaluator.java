@@ -39,13 +39,13 @@ public final class PortExpectationEvaluator {
 			}
 			return Outcome.CONFLICT;
 		}
+		if (portObservation.availability() == PortAvailability.FREE) {
+			return Outcome.NOT_IN_USE;
+		}
 		if (linkedService.isPresent()
 				&& linkedService.get().verificationState() == VerificationState.VERIFIED
 				&& linkedService.get().state() == ServiceState.RUNNING) {
 			return Outcome.IN_USE_BY_EXPECTED_SERVICE;
-		}
-		if (portObservation.availability() == PortAvailability.FREE) {
-			return Outcome.NOT_IN_USE;
 		}
 		if (occupantMatchesExpectation(expectation, portObservation.occupantHint())) {
 			return Outcome.IN_USE_BY_EXPECTED_SERVICE;

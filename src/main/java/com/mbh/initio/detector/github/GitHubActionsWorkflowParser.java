@@ -1,10 +1,7 @@
 package com.mbh.initio.detector.github;
 
-import com.mbh.initio.detector.DetectionException;
-import org.yaml.snakeyaml.Yaml;
+import com.mbh.initio.detector.YamlDocuments;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -15,22 +12,80 @@ import java.util.Set;
 
 public final class GitHubActionsWorkflowParser {
 
+	private static final List<String> JAVA_MATRIX_KEYS = List.of("java", "java-version", "jdk", "jdk-version");
+	private static final List<String> NODE_MATRIX_KEYS = List.of("node", "node-version", "node_version");
+
 	public ParsedWorkflow parse(Path workflowFile) {
 		Objects.requireNonNull(workflowFile, "workflowFile");
-		try {
-			Object loaded = new Yaml().load(Files.readString(workflowFile));
-			ParsedWorkflow.Builder builder = new ParsedWorkflow.Builder();
-			walk(loaded, builder);
-			return builder.build();
-		} catch (IOException exception) {
-			throw new DetectionException("Unable to read " + workflowFile.getFileName() + ".", exception);
+		Object loaded = YamlDocuments.load(workflowFile);
+		Matrix matrix = collectMatrix(loaded);
+		ParsedWorkflow.Builder builder = new ParsedWorkflow.Builder();
+		walk(loaded, builder, matrix);
+		return builder.build();
+	}
+
+	private static Matrix collectMatrix(Object document) {
+		Set<String> javaVersions = new LinkedHashSet<>();
+		Set<String> nodeVersions = new LinkedHashSet<>();
+		collectMatrix(document, javaVersions, nodeVersions);
+		return new Matrix(List.copyOf(javaVersions), List.copyOf(nodeVersions));
+	}
+
+	private static void collectMatrix(Object node, Set<String> javaVersions, Set<String> nodeVersions) {
+		if (node instanceof List<?> list) {
+			for (Object entry : list) {
+				collectMatrix(entry, javaVersions, nodeVersions);
+			}
+			return;
+		}
+		if (!(node instanceof Map<?, ?> map)) {
+			return;
+		}
+		Object strategy = map.get("strategy");
+		if (strategy instanceof Map<?, ?> strategyMap) {
+			Object matrixNode = strategyMap.get("matrix");
+			if (matrixNode instanceof Map<?, ?> matrix) {
+				for (String key : JAVA_MATRIX_KEYS) {
+					javaVersions.addAll(scalarVersions(matrix.get(key)));
+				}
+				for (String key : NODE_MATRIX_KEYS) {
+					nodeVersions.addAll(scalarVersions(matrix.get(key)));
+				}
+			}
+		}
+		for (Object value : map.values()) {
+			collectMatrix(value, javaVersions, nodeVersions);
 		}
 	}
 
-	private static void walk(Object node, ParsedWorkflow.Builder builder) {
+	private static List<String> scalarVersions(Object value) {
+		if (value == null) {
+			return List.of();
+		}
+		if (value instanceof List<?> list) {
+			List<String> versions = new ArrayList<>();
+			for (Object entry : list) {
+				if (entry == null || entry instanceof Map<?, ?> || entry instanceof List<?>) {
+					continue;
+				}
+				String text = entry.toString().trim();
+				if (!text.isEmpty() && !isExpression(text)) {
+					versions.add(text);
+				}
+			}
+			return versions;
+		}
+		if (value instanceof Map<?, ?> || isExpression(String.valueOf(value))) {
+			return List.of();
+		}
+		String text = value.toString().trim();
+		return text.isEmpty() ? List.of() : List.of(text);
+	}
+
+	private static void walk(Object node, ParsedWorkflow.Builder builder, Matrix matrix) {
 		if (node instanceof List<?> list) {
 			for (Object entry : list) {
-				walk(entry, builder);
+				walk(entry, builder, matrix);
 			}
 			return;
 		}
@@ -43,10 +98,10 @@ public final class GitHubActionsWorkflowParser {
 			Object with = map.get("with");
 			if (with instanceof Map<?, ?> withMap) {
 				if (action.contains("setup-java")) {
-					builder.addJavaVersions(extractVersion(withMap.get("java-version")));
+					builder.addJavaVersions(extractVersion(withMap.get("java-version"), matrix.java(), JAVA_MATRIX_KEYS));
 				}
 				if (action.contains("setup-node")) {
-					builder.addNodeVersions(extractVersion(withMap.get("node-version")));
+					builder.addNodeVersions(extractVersion(withMap.get("node-version"), matrix.node(), NODE_MATRIX_KEYS));
 				}
 			}
 		}
@@ -55,18 +110,18 @@ public final class GitHubActionsWorkflowParser {
 			builder.addRunCommand(normalizeRunCommand(run.toString()));
 		}
 		for (Object value : map.values()) {
-			walk(value, builder);
+			walk(value, builder, matrix);
 		}
 	}
 
-	private static List<String> extractVersion(Object value) {
+	private static List<String> extractVersion(Object value, List<String> matrixValues, List<String> matrixKeys) {
 		if (value == null) {
 			return List.of();
 		}
 		if (value instanceof List<?> list) {
 			List<String> versions = new ArrayList<>();
 			for (Object entry : list) {
-				versions.addAll(extractVersion(entry));
+				versions.addAll(extractVersion(entry, matrixValues, matrixKeys));
 			}
 			return versions;
 		}
@@ -74,7 +129,39 @@ public final class GitHubActionsWorkflowParser {
 		if (text.isEmpty()) {
 			return List.of();
 		}
+		if (isExpression(text)) {
+			String expression = expressionBody(text);
+			if (referencesMatrix(expression, matrixKeys)) {
+				return matrixValues;
+			}
+			return List.of();
+		}
 		return List.of(text);
+	}
+
+	private static boolean referencesMatrix(String expression, List<String> matrixKeys) {
+		for (String key : matrixKeys) {
+			if (("matrix." + key).equals(expression)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private static boolean isExpression(String text) {
+		return text != null && text.contains("${{") && text.contains("}}");
+	}
+
+	private static String expressionBody(String text) {
+		int start = text.indexOf("${{");
+		int end = text.indexOf("}}", start + 3);
+		if (start < 0 || end < 0) {
+			return "";
+		}
+		return text.substring(start + 3, end).trim();
+	}
+
+	private record Matrix(List<String> java, List<String> node) {
 	}
 
 	private static String normalizeRunCommand(String command) {

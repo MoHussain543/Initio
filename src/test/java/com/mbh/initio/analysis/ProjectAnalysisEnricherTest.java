@@ -122,7 +122,36 @@ class ProjectAnalysisEnricherTest {
 	}
 
 	@Test
-	void doesNotDuplicateRuntimeWhenConfiguredMajorMatchesDetected() {
+	void keepsCompatibleButDistinctJavaRequirementsWithProvenance() {
+		ProjectAnalysis detected = analyzer.analyze(FixtureRepositories.mavenPlain());
+		InitioProjectConfig config = new InitioProjectConfig(
+				List.of(),
+				Map.of("java", ">=21"),
+				List.of(),
+				List.of(),
+				List.of()
+		);
+
+		ProjectAnalysis project = ProjectAnalysisEnricher.apply(
+				detected,
+				config,
+				detected.projectPath().resolve("initio.yml")
+		);
+
+		assertTrue(project.runtimeRequirements().stream().anyMatch(requirement ->
+				requirement.runtime().equals("java")
+						&& "21".equals(requirement.requiredVersion())
+						&& requirement.source().file().toString().contains("pom.xml")
+		));
+		assertTrue(project.runtimeRequirements().stream().anyMatch(requirement ->
+				requirement.runtime().equals("java")
+						&& ">=21".equals(requirement.requiredVersion())
+						&& requirement.source().file().toString().contains("initio.yml")
+		));
+	}
+
+	@Test
+	void keepsIdenticalVersionFromDifferentSources() {
 		ProjectAnalysis detected = analyzer.analyze(FixtureRepositories.mavenPlain());
 		InitioProjectConfig config = new InitioProjectConfig(
 				List.of(),
@@ -138,9 +167,15 @@ class ProjectAnalysisEnricherTest {
 				detected.projectPath().resolve("initio.yml")
 		);
 
-		assertEquals(1, project.runtimeRequirements().size());
-		assertEquals("21", project.runtimeRequirements().getFirst().requiredVersion());
-		assertTrue(project.runtimeRequirements().getFirst().source().file().toString().contains("pom.xml"));
+		assertEquals(2, project.runtimeRequirements().size());
+		assertTrue(project.runtimeRequirements().stream().anyMatch(requirement ->
+				"21".equals(requirement.requiredVersion())
+						&& requirement.source().file().toString().contains("pom.xml")
+		));
+		assertTrue(project.runtimeRequirements().stream().anyMatch(requirement ->
+				"21".equals(requirement.requiredVersion())
+						&& requirement.source().file().toString().contains("initio.yml")
+		));
 	}
 
 	@Test

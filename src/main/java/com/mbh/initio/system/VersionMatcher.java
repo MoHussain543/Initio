@@ -5,37 +5,99 @@ import java.util.regex.Pattern;
 
 public final class VersionMatcher {
 
+	public enum Result {
+		COMPATIBLE,
+		INCOMPATIBLE,
+		UNKNOWN
+	}
+
 	private static final Pattern LEADING_NUMBER = Pattern.compile("(\\d+)");
+	private static final Pattern ALL_NUMBERS = Pattern.compile("\\d+");
+	private static final Pattern SUPPORTED_CONSTRAINT = Pattern.compile(
+			"^(>=|>|<=|<|\\^|~)?\\d+(?:\\.x|(?:\\.\\d+)*)$"
+	);
 
 	private VersionMatcher() {
 	}
 
 	public static boolean satisfies(String installedVersion, String requiredExpression) {
-		if (installedVersion == null || installedVersion.isBlank()) {
+		return match(installedVersion, requiredExpression) == Result.COMPATIBLE;
+	}
+
+	public static boolean isSupportedConstraint(String requiredExpression) {
+		if (requiredExpression == null || requiredExpression.isBlank()) {
 			return false;
 		}
+		String trimmed = requiredExpression.trim();
+		if (!SUPPORTED_CONSTRAINT.matcher(trimmed).matches()) {
+			return false;
+		}
+		return allNumbersAreParseable(trimmed);
+	}
+
+	private static boolean allNumbersAreParseable(String value) {
+		Matcher matcher = ALL_NUMBERS.matcher(value);
+		while (matcher.find()) {
+			try {
+				Integer.parseInt(matcher.group());
+			} catch (NumberFormatException exception) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public static Result match(String installedVersion, String requiredExpression) {
+		if (installedVersion == null || installedVersion.isBlank()) {
+			return Result.UNKNOWN;
+		}
 		if (requiredExpression == null || requiredExpression.isBlank()) {
-			return true;
+			return Result.COMPATIBLE;
+		}
+		String required = requiredExpression.trim();
+		if (!isSupportedConstraint(required)) {
+			return Result.UNKNOWN;
 		}
 		Integer installedMajor = majorVersion(installedVersion);
 		if (installedMajor == null) {
-			return false;
+			return Result.UNKNOWN;
 		}
-		String required = requiredExpression.trim();
 		if (required.startsWith(">=")) {
-			Integer minimum = majorVersion(required.substring(2).trim());
-			return minimum != null && installedMajor >= minimum;
+			return compare(installedMajor, required.substring(2), true, true);
 		}
-		if (required.startsWith("^")) {
-			Integer expected = majorVersion(required.substring(1).trim());
-			return expected != null && installedMajor.equals(expected);
+		if (required.startsWith("<=")) {
+			return compare(installedMajor, required.substring(2), false, true);
 		}
-		if (required.startsWith("~")) {
-			Integer expected = majorVersion(required.substring(1).trim());
-			return expected != null && installedMajor.equals(expected);
+		if (required.startsWith(">")) {
+			return compare(installedMajor, required.substring(1), true, false);
+		}
+		if (required.startsWith("<")) {
+			return compare(installedMajor, required.substring(1), false, false);
+		}
+		if (required.startsWith("^") || required.startsWith("~")) {
+			Integer expected = majorVersion(required.substring(1));
+			if (expected == null) {
+				return Result.UNKNOWN;
+			}
+			return installedMajor.equals(expected) ? Result.COMPATIBLE : Result.INCOMPATIBLE;
 		}
 		Integer exact = majorVersion(required);
-		return exact != null && installedMajor.equals(exact);
+		if (exact == null) {
+			return Result.UNKNOWN;
+		}
+		return installedMajor.equals(exact) ? Result.COMPATIBLE : Result.INCOMPATIBLE;
+	}
+
+	private static Result compare(int installedMajor, String bound, boolean greater, boolean inclusive) {
+		Integer requiredMajor = majorVersion(bound);
+		if (requiredMajor == null) {
+			return Result.UNKNOWN;
+		}
+		int comparison = Integer.compare(installedMajor, requiredMajor);
+		boolean ok = greater
+				? (inclusive ? comparison >= 0 : comparison > 0)
+				: (inclusive ? comparison <= 0 : comparison < 0);
+		return ok ? Result.COMPATIBLE : Result.INCOMPATIBLE;
 	}
 
 	public static Integer majorVersion(String version) {
@@ -43,6 +105,10 @@ public final class VersionMatcher {
 		if (!matcher.find()) {
 			return null;
 		}
-		return Integer.parseInt(matcher.group(1));
+		try {
+			return Integer.parseInt(matcher.group(1));
+		} catch (NumberFormatException exception) {
+			return null;
+		}
 	}
 }

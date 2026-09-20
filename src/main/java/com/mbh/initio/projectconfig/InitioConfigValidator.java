@@ -2,6 +2,7 @@ package com.mbh.initio.projectconfig;
 
 import com.mbh.initio.diagnostic.DiagnosticRuleId;
 import com.mbh.initio.model.CommandCategory;
+import com.mbh.initio.system.VersionMatcher;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -82,7 +83,7 @@ public final class InitioConfigValidator {
 		Set<String> seen = new LinkedHashSet<>();
 		for (int index = 0; index < entries.size(); index++) {
 			String path = "environment.required[" + index + "]";
-			String name = requiredText(entries.get(index), path, "Environment variable name", issues);
+			String name = environmentName(entries.get(index), path, issues);
 			if (name == null) {
 				continue;
 			}
@@ -112,7 +113,7 @@ public final class InitioConfigValidator {
 				continue;
 			}
 			path = "runtimes." + runtime;
-			String version = requiredText(entry.getValue(), path, "Runtime version", issues);
+			String version = runtimeConstraint(entry.getValue(), path, issues);
 			if (version == null) {
 				continue;
 			}
@@ -139,9 +140,9 @@ public final class InitioConfigValidator {
 				continue;
 			}
 			rejectUnknownKeys(map, COMMAND_KEYS, path, issues);
-			String name = requiredText(map.get("name"), path + ".name", "Command name", issues);
+			String name = requiredString(map.get("name"), path + ".name", "Command name", issues);
 			CommandCategory category = parseCategory(map.get("category"), path + ".category", issues);
-			String command = requiredText(map.get("command"), path + ".command", "Command", issues);
+			String command = requiredString(map.get("command"), path + ".command", "Command", issues);
 			if (name == null || category == null || command == null) {
 				continue;
 			}
@@ -172,7 +173,7 @@ public final class InitioConfigValidator {
 				continue;
 			}
 			rejectUnknownKeys(map, SERVICE_KEYS, path, issues);
-			String name = requiredText(map.get("name"), path + ".name", "Service name", issues);
+			String name = requiredString(map.get("name"), path + ".name", "Service name", issues);
 			Integer port = parsePort(map.get("port"), path + ".port", issues);
 			if (name == null || port == null) {
 				continue;
@@ -198,7 +199,7 @@ public final class InitioConfigValidator {
 		Set<String> seen = new LinkedHashSet<>();
 		for (int index = 0; index < entries.size(); index++) {
 			String path = "ignore[" + index + "]";
-			String expression = requiredText(entries.get(index), path, "Suppression", issues);
+			String expression = requiredString(entries.get(index), path, "Suppression", issues);
 			if (expression == null) {
 				continue;
 			}
@@ -229,7 +230,13 @@ public final class InitioConfigValidator {
 			return null;
 		}
 		return switch (prefix) {
-			case "env" -> new DiagnosticSuppression.Environment(value.toUpperCase(Locale.ROOT));
+			case "env" -> {
+				if (!isEnvironmentName(value)) {
+					issues.add(new ConfigIssue(path, "Environment variable name \"" + value + "\" is not valid."));
+					yield null;
+				}
+				yield new DiagnosticSuppression.Environment(value.toUpperCase(Locale.ROOT));
+			}
 			case "port" -> {
 				Integer port = parsePort(value, path, issues);
 				yield port == null ? null : new DiagnosticSuppression.Port(port);
@@ -276,7 +283,7 @@ public final class InitioConfigValidator {
 	}
 
 	private static CommandCategory parseCategory(Object value, String path, List<ConfigIssue> issues) {
-		String text = requiredText(value, path, "Command category", issues);
+		String text = requiredString(value, path, "Command category", issues);
 		if (text == null) {
 			return null;
 		}
@@ -297,22 +304,41 @@ public final class InitioConfigValidator {
 	}
 
 	private static Integer parsePort(Object value, String path, List<ConfigIssue> issues) {
-		if (value instanceof Number number) {
-			return validPort(number.intValue(), path, issues);
-		}
-		String text = text(value);
-		if (text == null) {
+		if (value == null) {
 			issues.add(new ConfigIssue(path, "Port is required."));
 			return null;
 		}
-		if (!text.chars().allMatch(Character::isDigit)) {
-			issues.add(new ConfigIssue(path, "Port \"" + text + "\" is not a number."));
+		if (value instanceof List<?> || value instanceof Map<?, ?>) {
+			issues.add(new ConfigIssue(path, "Port must be an integer between 1 and 65535."));
+			return null;
+		}
+		if (value instanceof Integer integer) {
+			return validPort(integer, path, issues);
+		}
+		if (value instanceof Long longValue) {
+			if (longValue < Integer.MIN_VALUE || longValue > Integer.MAX_VALUE) {
+				issues.add(new ConfigIssue(path, "Port " + longValue + " is not valid. Use a value between 1 and 65535."));
+				return null;
+			}
+			return validPort(longValue.intValue(), path, issues);
+		}
+		if (value instanceof Number) {
+			issues.add(new ConfigIssue(path, "Port must be an integer between 1 and 65535."));
+			return null;
+		}
+		if (!(value instanceof String text)) {
+			issues.add(new ConfigIssue(path, "Port must be an integer between 1 and 65535."));
+			return null;
+		}
+		String digits = text.trim();
+		if (digits.isEmpty() || !digits.chars().allMatch(Character::isDigit)) {
+			issues.add(new ConfigIssue(path, "Port \"" + text + "\" is not an integer."));
 			return null;
 		}
 		try {
-			return validPort(Integer.parseInt(text), path, issues);
+			return validPort(Integer.parseInt(digits), path, issues);
 		} catch (NumberFormatException exception) {
-			issues.add(new ConfigIssue(path, "Port \"" + text + "\" is not a number."));
+			issues.add(new ConfigIssue(path, "Port \"" + text + "\" is not an integer."));
 			return null;
 		}
 	}
@@ -323,6 +349,53 @@ public final class InitioConfigValidator {
 			return null;
 		}
 		return port;
+	}
+
+	private static String environmentName(Object value, String path, List<ConfigIssue> issues) {
+		String name = requiredString(value, path, "Environment variable name", issues);
+		if (name == null) {
+			return null;
+		}
+		if (!isEnvironmentName(name)) {
+			issues.add(new ConfigIssue(path, "Environment variable name \"" + name + "\" is not valid."));
+			return null;
+		}
+		return name;
+	}
+
+	private static String runtimeConstraint(Object value, String path, List<ConfigIssue> issues) {
+		if (value instanceof List<?> || value instanceof Map<?, ?>) {
+			issues.add(new ConfigIssue(path, "Runtime version must be a string such as 25 or >=22."));
+			return null;
+		}
+		String version = requiredText(value, path, "Runtime version", issues);
+		if (version == null) {
+			return null;
+		}
+		if (!VersionMatcher.isSupportedConstraint(version)) {
+			issues.add(new ConfigIssue(
+					path,
+					"Runtime version \"" + version + "\" is not supported. Use a simple constraint such as 25, >=22, 21.x, ^22, or ~22."
+			));
+			return null;
+		}
+		return version;
+	}
+
+	private static String requiredString(Object value, String path, String label, List<ConfigIssue> issues) {
+		if (value instanceof List<?> || value instanceof Map<?, ?>) {
+			issues.add(new ConfigIssue(path, label + " must be a string."));
+			return null;
+		}
+		if (value != null && !(value instanceof String)) {
+			issues.add(new ConfigIssue(path, label + " must be a string."));
+			return null;
+		}
+		return requiredText(value, path, label, issues);
+	}
+
+	private static boolean isEnvironmentName(String name) {
+		return name.matches("[A-Za-z_][A-Za-z0-9_]*");
 	}
 
 	private static String requiredText(Object value, String path, String label, List<ConfigIssue> issues) {

@@ -1,6 +1,5 @@
 package com.mbh.initio.analysis;
 
-import com.mbh.initio.diagnostic.VersionDriftHelper;
 import com.mbh.initio.model.CommandOrigin;
 import com.mbh.initio.model.DetectionConfidence;
 import com.mbh.initio.model.DetectionSource;
@@ -156,7 +155,7 @@ public final class ProjectAnalysisEnricher {
 		for (var entry : config.runtimes().entrySet()) {
 			String runtime = entry.getKey().toLowerCase();
 			String version = entry.getValue();
-			if (hasMatchingMajor(detected.runtimeRequirements(), runtime, version)) {
+			if (hasEquivalentRequirement(detected.runtimeRequirements(), runtime, version, source)) {
 				continue;
 			}
 			merged.add(RuntimeRequirement.declared(runtime, version, source));
@@ -168,21 +167,21 @@ public final class ProjectAnalysisEnricher {
 		return List.copyOf(merged);
 	}
 
-	private static boolean hasMatchingMajor(List<RuntimeRequirement> requirements, String runtime, String version) {
+	private static boolean hasEquivalentRequirement(
+			List<RuntimeRequirement> requirements,
+			String runtime,
+			String version,
+			DetectionSource source
+	) {
 		for (RuntimeRequirement requirement : requirements) {
 			if (!requirement.runtime().equalsIgnoreCase(runtime)) {
 				continue;
 			}
-			if (requirement.requiredVersion() == null || requirement.requiredVersion().isBlank()) {
+			String existing = requirement.requiredVersion() == null ? "" : requirement.requiredVersion().trim();
+			if (!existing.equals(version.trim())) {
 				continue;
 			}
-			if (VersionDriftHelper.referenceMajor(requirement.requiredVersion()).isEmpty()) {
-				continue;
-			}
-			if (VersionDriftHelper.referenceMajor(version).isEmpty()) {
-				continue;
-			}
-			if (VersionDriftHelper.sameMajor(requirement.requiredVersion(), version)) {
+			if (requirement.source().file().equals(source.file())) {
 				return true;
 			}
 		}

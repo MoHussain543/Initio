@@ -18,6 +18,7 @@ class InfoCommandTest {
 		assertEquals(0, output.exitCode());
 		assertTrue(output.stdout().contains("Project"));
 		assertTrue(output.stdout().contains("Spring Maven Demo"));
+		assertTrue(output.stdout().contains("Path: "));
 		assertTrue(output.stdout().contains("Languages"));
 		assertTrue(output.stdout().contains("Java"));
 		assertTrue(output.stdout().contains("Frameworks"));
@@ -33,6 +34,18 @@ class InfoCommandTest {
 		assertTrue(output.stdout().contains("./mvnw test"));
 		assertTrue(output.stdout().contains("Commands"));
 		assertTrue(output.stdout().contains("initio commands"));
+	}
+
+	@Test
+	void infoShowsDeclaredLanguageVersionNextToTheLanguage() {
+		CommandResult output = InitioCli.execute("info", FixtureRepositories.springMaven().toString());
+
+		assertEquals(0, output.exitCode());
+		String languagesSection = output.stdout().substring(
+				output.stdout().indexOf("Languages"),
+				output.stdout().indexOf("Frameworks")
+		);
+		assertTrue(languagesSection.contains("Java 25"));
 	}
 
 	@Test

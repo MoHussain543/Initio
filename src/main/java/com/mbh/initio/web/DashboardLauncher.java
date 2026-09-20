@@ -30,11 +30,23 @@ public final class DashboardLauncher {
 		application.setWebApplicationType(WebApplicationType.SERVLET);
 
 		String projectPathProperty = projectPath.toAbsolutePath().normalize().toString();
-		ConfigurableApplicationContext context = application.run(
-				"--server.port=" + port,
-				"--server.address=" + host,
-				"--initio.dashboard.project-path=" + projectPathProperty
-		);
+		ConfigurableApplicationContext context;
+		try {
+			context = application.run(
+					"--server.port=" + port,
+					"--server.address=" + host,
+					"--initio.dashboard.project-path=" + projectPathProperty
+			);
+		} catch (Exception exception) {
+			err.println(
+					"""
+					Initio could not start the dashboard.
+
+					The dashboard server failed to start.
+					""".stripTrailing()
+			);
+			return 1;
+		}
 
 		out.println();
 		out.println("Initio dashboard running at http://" + host + ":" + port + "/");

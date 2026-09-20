@@ -79,8 +79,8 @@ class DefaultDockerInspectorTest {
 
 		List<ServiceStatus> statuses = new DefaultDockerInspector(commandExecutor).inspectServices(project);
 
-		assertEquals(1, statuses.size());
-		assertEquals("redis", statuses.get(0).serviceName());
-		assertEquals(VerificationState.UNVERIFIED, statuses.get(0).verificationState());
+		// Configured (non-compose) service hints are left for LocalEnvironmentInspector to
+		// verify against the port scan, so the docker inspector must not pre-empt them here.
+		assertEquals(List.of(), statuses);
 	}
 }

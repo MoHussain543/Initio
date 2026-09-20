@@ -27,7 +27,8 @@ public final class MissingEnvironmentVariableRule implements DiagnosticRule {
 						DiagnosticSeverity.ERROR,
 						requirement.name() + " is missing",
 						"Add " + requirement.name() + " to .env (expected from " + requirement.source().file() + ")",
-						requirement.name()
+						requirement.name(),
+						requirement.source().file()
 				));
 				continue;
 			}
@@ -37,7 +38,8 @@ public final class MissingEnvironmentVariableRule implements DiagnosticRule {
 						DiagnosticSeverity.ERROR,
 						requirement.name() + " is empty",
 						"Set a value for " + requirement.name() + " in .env or your environment",
-						requirement.name()
+						requirement.name(),
+						requirement.source().file()
 				));
 			}
 		}

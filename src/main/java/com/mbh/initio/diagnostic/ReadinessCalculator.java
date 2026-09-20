@@ -2,6 +2,7 @@ package com.mbh.initio.diagnostic;
 
 import com.mbh.initio.analysis.AnalysisContext;
 import com.mbh.initio.model.DiagnosticIssue;
+import com.mbh.initio.model.DiagnosticSeverity;
 import com.mbh.initio.model.EnvironmentVariableRequirement;
 import com.mbh.initio.model.ReadinessScore;
 import com.mbh.initio.model.PortExpectation;
@@ -16,6 +17,9 @@ import java.util.Optional;
 
 public final class ReadinessCalculator {
 
+	static final int WEIGHT_CRITICAL = 3;
+	static final int WEIGHT_SECONDARY = 1;
+
 	public ReadinessScore calculate(AnalysisContext context, List<DiagnosticIssue> issues) {
 		return calculate(context, issues, List.of());
 	}
@@ -25,9 +29,7 @@ public final class ReadinessCalculator {
 			List<DiagnosticIssue> issues,
 			List<DiagnosticSuppression> suppressions
 	) {
-		int verifiedPassed = 0;
-		int verifiedTotal = 0;
-		int unverifiedCount = 0;
+		Tally tally = new Tally();
 
 		for (RuntimeRequirement requirement : context.project().runtimeRequirements()) {
 			if (requirement.requiredVersion() == null || requirement.requiredVersion().isBlank()) {
@@ -37,13 +39,17 @@ public final class ReadinessCalculator {
 					requirement,
 					context.local().installedRuntime(requirement.runtime())
 			);
-			if (outcome == RuntimeRequirementEvaluator.Outcome.UNVERIFIED) {
-				unverifiedCount++;
-				continue;
-			}
-			verifiedTotal++;
-			if (outcome == RuntimeRequirementEvaluator.Outcome.SATISFIED) {
-				verifiedPassed++;
+			switch (outcome) {
+				case UNVERIFIED -> tally.unknown();
+				case SATISFIED -> tally.pass(WEIGHT_CRITICAL);
+				case MISSING -> tally.failUnlessSuppressed(
+						WEIGHT_CRITICAL,
+						DiagnosticSuppressionFilter.ruleSuppressed(DiagnosticRuleId.MISSING_RUNTIME, suppressions)
+				);
+				case INCOMPATIBLE -> tally.failUnlessSuppressed(
+						WEIGHT_CRITICAL,
+						DiagnosticSuppressionFilter.ruleSuppressed(DiagnosticRuleId.INCOMPATIBLE_RUNTIME, suppressions)
+				);
 			}
 		}
 
@@ -54,30 +60,29 @@ public final class ReadinessCalculator {
 			EnvironmentRequirementEvaluator.Outcome outcome = EnvironmentRequirementEvaluator.outcome(
 					context.local().environmentVariableStatus(requirement.name())
 			);
-			if (outcome == EnvironmentRequirementEvaluator.Outcome.UNVERIFIED) {
-				unverifiedCount++;
-				continue;
-			}
-			verifiedTotal++;
-			if (outcome == EnvironmentRequirementEvaluator.Outcome.SATISFIED) {
-				verifiedPassed++;
+			boolean envRuleSuppressed = DiagnosticSuppressionFilter.ruleSuppressed(
+					DiagnosticRuleId.MISSING_ENVIRONMENT_VARIABLE,
+					suppressions
+			);
+			switch (outcome) {
+				case UNVERIFIED -> tally.unknown();
+				case SATISFIED -> tally.pass(WEIGHT_CRITICAL);
+				case MISSING, EMPTY -> tally.failUnlessSuppressed(WEIGHT_CRITICAL, envRuleSuppressed);
 			}
 		}
 
 		for (ServiceRequirement requirement : context.project().serviceRequirements()) {
-			if (!requirement.composeBacked()) {
-				continue;
-			}
 			ServiceRequirementEvaluator.Outcome outcome = ServiceRequirementEvaluator.outcome(
 					context.local().serviceStatus(requirement.serviceName())
 			);
-			if (outcome == ServiceRequirementEvaluator.Outcome.UNVERIFIED) {
-				unverifiedCount++;
-				continue;
-			}
-			verifiedTotal++;
-			if (outcome == ServiceRequirementEvaluator.Outcome.RUNNING) {
-				verifiedPassed++;
+			boolean suppressed = DiagnosticSuppressionFilter.ruleSuppressed(
+					DiagnosticRuleId.MISSING_REQUIRED_SERVICE,
+					suppressions
+			);
+			switch (outcome) {
+				case UNVERIFIED -> tally.unknown();
+				case RUNNING -> tally.pass(WEIGHT_CRITICAL);
+				case STOPPED -> tally.failUnlessSuppressed(WEIGHT_CRITICAL, suppressed);
 			}
 		}
 
@@ -93,34 +98,92 @@ public final class ReadinessCalculator {
 					context.local().portObservation(expectation.port()),
 					Optional.<ServiceStatus>empty()
 			);
-			if (outcome == PortExpectationEvaluator.Outcome.UNVERIFIED) {
-				unverifiedCount++;
-				continue;
-			}
-			verifiedTotal++;
-			if (outcome == PortExpectationEvaluator.Outcome.AVAILABLE) {
-				verifiedPassed++;
+			boolean portRuleSuppressed = DiagnosticSuppressionFilter.ruleSuppressed(
+					DiagnosticRuleId.PORT_CONFLICT,
+					suppressions
+			);
+			switch (outcome) {
+				case UNVERIFIED -> tally.unknown();
+				case AVAILABLE -> tally.pass(WEIGHT_SECONDARY);
+				case CONFLICT, IN_USE_BY_EXPECTED_SERVICE -> tally.failUnlessSuppressed(
+						WEIGHT_SECONDARY,
+						portRuleSuppressed
+				);
 			}
 		}
 
-		int percent = verifiedTotal == 0 ? 100 : (verifiedPassed * 100) / verifiedTotal;
-		String summary = buildSummary(verifiedPassed, verifiedTotal, unverifiedCount, issues.size());
-		return new ReadinessScore(percent, verifiedPassed, verifiedTotal, unverifiedCount, summary);
+		boolean hasVisibleError = issues.stream().anyMatch(issue -> issue.severity() == DiagnosticSeverity.ERROR);
+		Integer percent = percent(tally, hasVisibleError);
+		String summary = buildSummary(tally, issues.size(), percent);
+		return new ReadinessScore(percent, tally.passedChecks, tally.scoredChecks, tally.unverified, summary);
 	}
 
-	private static String buildSummary(int verifiedPassed, int verifiedTotal, int unverifiedCount, int issueCount) {
+	private static Integer percent(Tally tally, boolean hasVisibleError) {
+		if (tally.scoredWeight == 0) {
+			if (hasVisibleError) {
+				return 0;
+			}
+			return null;
+		}
+		int value = (tally.passedWeight * 100) / tally.scoredWeight;
+		if ((hasVisibleError || tally.unverified > 0) && value == 100) {
+			return (tally.passedWeight * 100) / (tally.scoredWeight + WEIGHT_CRITICAL);
+		}
+		return value;
+	}
+
+	private static String buildSummary(Tally tally, int issueCount, Integer percent) {
 		StringBuilder summary = new StringBuilder();
-		if (verifiedTotal == 0) {
+		if (percent == null) {
+			summary.append("Readiness score unavailable");
+			if (tally.unverified > 0) {
+				summary.append(" · Verified: 0 of ").append(tally.unverified);
+			} else {
+				summary.append(" · Verified: none");
+			}
+		} else if (tally.scoredChecks == 0) {
 			summary.append("Verified: none");
 		} else {
-			summary.append("Verified: ").append(verifiedPassed).append('/').append(verifiedTotal).append(" requirements");
+			summary.append("Verified: ").append(tally.passedChecks).append('/').append(tally.scoredChecks)
+					.append(" requirements");
 		}
-		if (unverifiedCount > 0) {
-			summary.append(" · ").append(unverifiedCount).append(" could not verify");
+		if (tally.unverified > 0 && percent != null) {
+			summary.append(" · ").append(tally.unverified).append(" could not verify");
 		}
 		if (issueCount > 0) {
-			summary.append(" · ").append(issueCount).append(" issues");
+			summary.append(" · ").append(issueCount).append(issueCount == 1 ? " issue" : " issues");
 		}
 		return summary.toString();
+	}
+
+	private static final class Tally {
+		private int passedChecks;
+		private int scoredChecks;
+		private int passedWeight;
+		private int scoredWeight;
+		private int unverified;
+
+		private void pass(int weight) {
+			passedChecks++;
+			scoredChecks++;
+			passedWeight += weight;
+			scoredWeight += weight;
+		}
+
+		private void fail(int weight) {
+			failUnlessSuppressed(weight, false);
+		}
+
+		private void failUnlessSuppressed(int weight, boolean suppressed) {
+			if (suppressed) {
+				return;
+			}
+			scoredChecks++;
+			scoredWeight += weight;
+		}
+
+		private void unknown() {
+			unverified++;
+		}
 	}
 }

@@ -30,7 +30,8 @@ public final class MissingRuntimeRule implements DiagnosticRule {
 					DiagnosticRuleId.MISSING_RUNTIME,
 					DiagnosticSeverity.ERROR,
 					runtimeLabel + " is not installed",
-					"Install " + runtimeLabel + " to satisfy " + requirement.source().file()
+					"Install " + runtimeLabel + " to satisfy " + requirement.source().file(),
+					requirement.source().file()
 			));
 		}
 		return issues;

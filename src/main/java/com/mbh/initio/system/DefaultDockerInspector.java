@@ -29,20 +29,14 @@ public final class DefaultDockerInspector implements DockerInspector {
 
 	@Override
 	public List<ServiceStatus> inspectServices(ProjectAnalysis project) {
-		List<ServiceRequirement> requirements = project.serviceRequirements();
-		if (requirements.isEmpty()) {
-			return List.of();
-		}
-		List<ServiceRequirement> composeRequirements = requirements.stream()
+		List<ServiceRequirement> composeRequirements = project.serviceRequirements().stream()
 				.filter(ServiceRequirement::composeBacked)
 				.toList();
 		if (composeRequirements.isEmpty()) {
-			return requirements.stream()
-					.map(requirement -> ServiceStatus.unverified(requirement.serviceName()))
-					.toList();
+			return List.of();
 		}
 		if (!isDockerAvailable()) {
-			return requirements.stream()
+			return composeRequirements.stream()
 					.map(requirement -> ServiceStatus.unverified(requirement.serviceName()))
 					.toList();
 		}
@@ -60,7 +54,7 @@ public final class DefaultDockerInspector implements DockerInspector {
 		}
 
 		List<ServiceStatus> ordered = new ArrayList<>();
-		for (ServiceRequirement requirement : requirements) {
+		for (ServiceRequirement requirement : composeRequirements) {
 			ordered.add(statuses.getOrDefault(requirement.serviceName(), ServiceStatus.unverified(requirement.serviceName())));
 		}
 		return List.copyOf(ordered);

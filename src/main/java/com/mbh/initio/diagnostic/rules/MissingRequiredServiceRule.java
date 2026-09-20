@@ -20,19 +20,28 @@ public final class MissingRequiredServiceRule implements DiagnosticRule {
 
 	@Override
 	public List<DiagnosticIssue> evaluate(AnalysisContext context) {
-		if (context.project().serviceRequirements().stream().noneMatch(ServiceRequirement::composeBacked)) {
-			return List.of();
-		}
-		Optional<InstalledRuntime> docker = context.local().installedRuntime("docker");
-		if (docker.isEmpty()
-				|| docker.get().verificationState() == VerificationState.UNVERIFIED
-				|| docker.get().status() == RequirementStatus.MISSING) {
-			return List.of();
-		}
-
 		List<DiagnosticIssue> issues = new ArrayList<>();
+		boolean dockerUsable = dockerUsable(context);
 		for (ServiceRequirement requirement : context.project().serviceRequirements()) {
-			if (!requirement.composeBacked()) {
+			if (requirement.composeBacked()) {
+				if (!dockerUsable) {
+					continue;
+				}
+				Outcome outcome = ServiceRequirementEvaluator.outcome(
+						context.local().serviceStatus(requirement.serviceName())
+				);
+				if (outcome != Outcome.STOPPED) {
+					continue;
+				}
+				String detail = "Run docker compose up -d " + requirement.serviceName()
+						+ " (from " + requirement.composeFile() + ")";
+				issues.add(new DiagnosticIssue(
+						DiagnosticRuleId.MISSING_REQUIRED_SERVICE,
+						DiagnosticSeverity.ERROR,
+						requirement.serviceName() + " is not running",
+						detail,
+						requirement.composeFile()
+				));
 				continue;
 			}
 			Outcome outcome = ServiceRequirementEvaluator.outcome(
@@ -41,15 +50,29 @@ public final class MissingRequiredServiceRule implements DiagnosticRule {
 			if (outcome != Outcome.STOPPED) {
 				continue;
 			}
-			String detail = "Run docker compose up -d " + requirement.serviceName()
-					+ " (from " + requirement.composeFile() + ")";
+			int port = requirement.publishedHostPorts().isEmpty()
+					? -1
+					: requirement.publishedHostPorts().getFirst();
+			String portLabel = port > 0 ? String.valueOf(port) : "its configured port";
 			issues.add(new DiagnosticIssue(
 					DiagnosticRuleId.MISSING_REQUIRED_SERVICE,
 					DiagnosticSeverity.ERROR,
-					requirement.serviceName() + " is not running",
-					detail
+					"Configured service \"" + requirement.serviceName() + "\" was not detected",
+					"Configured service \"" + requirement.serviceName() + "\" could not be detected on port "
+							+ portLabel + ".",
+					requirement.source().file()
 			));
 		}
 		return issues;
+	}
+
+	private static boolean dockerUsable(AnalysisContext context) {
+		if (context.project().serviceRequirements().stream().noneMatch(ServiceRequirement::composeBacked)) {
+			return false;
+		}
+		Optional<InstalledRuntime> docker = context.local().installedRuntime("docker");
+		return docker.isPresent()
+				&& docker.get().verificationState() != VerificationState.UNVERIFIED
+				&& docker.get().status() != RequirementStatus.MISSING;
 	}
 }

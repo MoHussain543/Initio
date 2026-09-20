@@ -36,7 +36,8 @@ public final class IncompatibleRuntimeVersionRule implements DiagnosticRule {
 					DiagnosticSeverity.ERROR,
 					"Installed " + runtimeLabel + " does not satisfy project requirement",
 					"Required " + requirement.requiredVersion() + " from " + requirement.source().file()
-							+ ", found " + installed.detectedVersion()
+							+ ", found " + installed.detectedVersion(),
+					requirement.source().file()
 			));
 		}
 		return issues;

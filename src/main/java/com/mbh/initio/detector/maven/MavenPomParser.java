@@ -2,6 +2,9 @@ package com.mbh.initio.detector.maven;
 
 import com.mbh.initio.detector.DetectionException;
 import org.w3c.dom.Document;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
@@ -58,7 +61,23 @@ public final class MavenPomParser {
 		factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
 		factory.setXIncludeAware(false);
 		factory.setExpandEntityReferences(false);
-		return factory.newDocumentBuilder();
+		DocumentBuilder builder = factory.newDocumentBuilder();
+		builder.setErrorHandler(new ErrorHandler() {
+			@Override
+			public void warning(SAXParseException exception) {
+			}
+
+			@Override
+			public void error(SAXParseException exception) throws SAXException {
+				throw exception;
+			}
+
+			@Override
+			public void fatalError(SAXParseException exception) throws SAXException {
+				throw exception;
+			}
+		});
+		return builder;
 	}
 
 	private static boolean hasSpringBootDependency(XPath xpath, Document document) throws XPathExpressionException {

@@ -1,4 +1,4 @@
 package com.mbh.initio.web.dto;
 
-public record ReadinessResponse(int score, String summary, int issueCount) {
+public record ReadinessResponse(Integer score, String status, String summary, int issueCount) {
 }

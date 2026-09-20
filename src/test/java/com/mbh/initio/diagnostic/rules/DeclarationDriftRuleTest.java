@@ -32,6 +32,7 @@ class DeclarationDriftRuleTest {
 				issue.severity() == DiagnosticSeverity.WARNING
 						&& issue.ruleId() == com.mbh.initio.diagnostic.DiagnosticRuleId.DECLARATION_DRIFT
 						&& issue.title().contains("Conflicting Node engine declarations")
+						&& issue.sourceFile() != null
 		));
 	}
 
@@ -45,7 +46,7 @@ class DeclarationDriftRuleTest {
 		List<DiagnosticIssue> issues = new DeclarationDriftRule().evaluate(context);
 
 		assertTrue(issues.stream().anyMatch(issue ->
-				issue.title().contains("Conflicting Java versions")
+				issue.title().contains("Conflicting Java versions") && issue.sourceFile() != null
 		));
 	}
 
@@ -65,6 +66,8 @@ class DeclarationDriftRuleTest {
 						&& issue.detail().contains("25")
 						&& issue.detail().contains("pom.xml")
 						&& issue.detail().contains("initio.yml")
+						&& issue.sourceFile() != null
+						&& issue.sourceFile().toString().contains("initio.yml")
 		));
 	}
 }

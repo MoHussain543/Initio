@@ -21,14 +21,13 @@ final class DotEnvPresenceScanner {
 		if (!Files.isRegularFile(dotEnvFile)) {
 			return KeyState.NOT_FOUND;
 		}
-		for (String line : Files.readAllLines(dotEnvFile)) {
-			ParsedLine parsed = parseLine(line);
-			if (parsed == null || !parsed.key.equals(variableName)) {
-				continue;
-			}
-			return parsed.value.isEmpty() ? KeyState.EMPTY : KeyState.HAS_VALUE;
+		try (var lines = Files.lines(dotEnvFile)) {
+			return lines.map(DotEnvPresenceScanner::parseLine)
+					.filter(parsed -> parsed != null && parsed.key.equals(variableName))
+					.findFirst()
+					.map(parsed -> parsed.hasValue ? KeyState.HAS_VALUE : KeyState.EMPTY)
+					.orElse(KeyState.NOT_FOUND);
 		}
-		return KeyState.NOT_FOUND;
 	}
 
 	private static ParsedLine parseLine(String line) {
@@ -50,10 +49,10 @@ final class DotEnvPresenceScanner {
 		if (key.isEmpty()) {
 			return null;
 		}
-		String value = trimmed.substring(separator + 1).trim();
-		return new ParsedLine(key, value);
+		boolean hasValue = !trimmed.substring(separator + 1).trim().isEmpty();
+		return new ParsedLine(key, hasValue);
 	}
 
-	private record ParsedLine(String key, String value) {
+	private record ParsedLine(String key, boolean hasValue) {
 	}
 }

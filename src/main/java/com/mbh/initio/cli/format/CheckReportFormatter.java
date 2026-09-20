@@ -85,7 +85,11 @@ public final class CheckReportFormatter {
 		ReportLayout.blank(out);
 
 		ReportLayout.section(out, "Result");
-		out.println("Project readiness: " + result.readiness().percent() + "%");
+		if (result.readiness().scored()) {
+			out.println("Project readiness: " + result.readiness().percent() + "%");
+		} else {
+			out.println("Project readiness: Unknown");
+		}
 		out.println(result.readiness().summary());
 		if (result.issues().isEmpty()) {
 			out.println("No issues detected.");
@@ -121,8 +125,14 @@ public final class CheckReportFormatter {
 		}
 		return switch (outcome) {
 			case UNVERIFIED -> label + " — Could not verify · " + requirement.source().file();
-			case STOPPED -> "✗ " + label + " — not running · " + requirement.source().file();
-			case RUNNING -> "✓ " + label + " — running · " + requirement.source().file();
+			case STOPPED -> requirement.composeBacked()
+					? "✗ " + label + " — not running · " + requirement.source().file()
+					: "✗ " + label + " — not detected on port "
+							+ requirement.publishedHostPorts().getFirst() + " · " + requirement.source().file();
+			case RUNNING -> requirement.composeBacked()
+					? "✓ " + label + " — running · " + requirement.source().file()
+					: "✓ " + label + " — listening on port "
+							+ requirement.publishedHostPorts().getFirst() + " · " + requirement.source().file();
 		};
 	}
 

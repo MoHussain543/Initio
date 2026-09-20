@@ -47,6 +47,18 @@ public final class DiagnosticSuppressionFilter {
 		return false;
 	}
 
+	public static boolean ruleSuppressed(DiagnosticRuleId ruleId, List<DiagnosticSuppression> suppressions) {
+		if (ruleId == null) {
+			return false;
+		}
+		for (DiagnosticSuppression suppression : suppressions) {
+			if (suppression instanceof DiagnosticSuppression.Rule rule && rule.ruleId() == ruleId) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	static boolean suppressed(DiagnosticIssue issue, List<DiagnosticSuppression> suppressions) {
 		for (DiagnosticSuppression suppression : suppressions) {
 			if (matches(issue, suppression)) {

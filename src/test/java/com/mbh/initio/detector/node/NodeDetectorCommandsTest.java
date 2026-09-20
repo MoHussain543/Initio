@@ -22,5 +22,14 @@ class NodeDetectorCommandsTest {
 		assertTrue(result.projectCommands().stream().anyMatch(
 				command -> command.command().equals("npm run build")
 		));
+		assertTrue(result.projectCommands().stream().anyMatch(
+				command -> command.command().equals("npm run seed-db") && command.category().name().equals("OTHER")
+		));
+		assertTrue(result.projectCommands().stream().anyMatch(
+				command -> command.command().equals("npm run integration")
+		));
+		assertTrue(result.projectCommands().stream().anyMatch(
+				command -> command.command().equals("npm run generate-client")
+		));
 	}
 }

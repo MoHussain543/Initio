@@ -46,7 +46,8 @@ public final class PortConflictRule implements DiagnosticRule {
 					severity,
 					title,
 					detail,
-					expectation.port()
+					expectation.port(),
+					expectation.source().file()
 			));
 		}
 		return issues;

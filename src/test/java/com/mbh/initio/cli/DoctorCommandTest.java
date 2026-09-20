@@ -31,6 +31,22 @@ class DoctorCommandTest {
 	}
 
 	@Test
+	void doctorIncludesReadinessScoreAndBreakdown() {
+		CommandResult output = InitioCli.execute("doctor", FixtureRepositories.brokenEnv().toString());
+
+		assertTrue(output.stdout().contains("Readiness"));
+		assertTrue(output.stdout().contains("Project readiness:"));
+	}
+
+	@Test
+	void doctorIncludesReadinessSectionEvenWithNoIssues() {
+		CommandResult output = InitioCli.execute("doctor", FixtureRepositories.empty().toString());
+
+		assertTrue(output.stdout().contains("Readiness"));
+		assertTrue(output.stdout().contains("Project readiness:"));
+	}
+
+	@Test
 	void doctorReportsDeclarationDriftWarningsForFullstackFixture() {
 		CommandResult output = InitioCli.execute("doctor", FixtureRepositories.fullstack().toString());
 

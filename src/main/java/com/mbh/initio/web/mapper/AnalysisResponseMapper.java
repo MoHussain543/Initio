@@ -37,6 +37,7 @@ import com.mbh.initio.web.dto.TechnologyResponse;
 import org.springframework.stereotype.Component;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -77,6 +78,7 @@ public class AnalysisResponseMapper {
 	private static ReadinessResponse toReadiness(AnalysisResult result) {
 		return new ReadinessResponse(
 				result.readiness().percent(),
+				result.readiness().scored() ? "SCORED" : "UNKNOWN",
 				result.readiness().summary(),
 				result.issues().size()
 		);
@@ -182,12 +184,30 @@ public class AnalysisResponseMapper {
 	}
 
 	private static IssueResponse toIssue(DiagnosticIssue issue) {
+		String copyText = extractCopyText(issue.detail());
 		return new IssueResponse(
+				issue.ruleId().name(),
 				issue.severity().name(),
 				issue.title(),
 				issue.detail(),
-				extractCopyText(issue.detail())
+				issueSources(issue),
+				copyText,
+				copyText
 		);
+	}
+
+	private static List<String> issueSources(DiagnosticIssue issue) {
+		ArrayList<String> sources = new ArrayList<>();
+		if (issue.sourceFile() != null) {
+			sources.add(issue.sourceFile().toString());
+		}
+		if (issue.environmentName() != null) {
+			sources.add(issue.environmentName());
+		}
+		if (issue.port() != null) {
+			sources.add("port " + issue.port());
+		}
+		return List.copyOf(sources);
 	}
 
 	private static List<CommandResponse> toCommands(ProjectAnalysis project) {
@@ -290,6 +310,13 @@ public class AnalysisResponseMapper {
 		}
 		for (String line : detail.lines().toList()) {
 			String trimmed = line.strip();
+			if (trimmed.regionMatches(true, 0, "Run ", 0, 4)) {
+				trimmed = trimmed.substring(4).strip();
+			}
+			int from = trimmed.indexOf(" (from ");
+			if (from > 0) {
+				trimmed = trimmed.substring(0, from).strip();
+			}
 			if (looksLikeCopyableCommand(trimmed)) {
 				return trimmed;
 			}
@@ -299,9 +326,16 @@ public class AnalysisResponseMapper {
 
 	private static boolean looksLikeCopyableCommand(String line) {
 		return line.startsWith("docker ")
+				|| line.startsWith("docker compose ")
+				|| line.startsWith("docker-compose ")
 				|| line.startsWith("./mvnw")
 				|| line.startsWith("mvn ")
+				|| line.startsWith("./gradlew")
+				|| line.startsWith("gradle ")
 				|| line.startsWith("npm ")
+				|| line.startsWith("npx ")
+				|| line.startsWith("yarn ")
+				|| line.startsWith("pnpm ")
 				|| line.startsWith("make ");
 	}
 }

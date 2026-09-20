@@ -1,4 +1,14 @@
 package com.mbh.initio.web.dto;
 
-public record IssueResponse(String severity, String title, String detail, String copyText) {
+import java.util.List;
+
+public record IssueResponse(
+		String ruleId,
+		String severity,
+		String title,
+		String detail,
+		List<String> sources,
+		String suggestedAction,
+		String copyText
+) {
 }

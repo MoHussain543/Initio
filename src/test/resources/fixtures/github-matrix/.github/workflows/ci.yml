@@ -1,0 +1,16 @@
+name: CI
+
+on:
+  push:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java: [21, 25]
+    steps:
+      - uses: actions/setup-java@v4
+        with:
+          java-version: ${{ matrix.java }}
+      - run: mvn test

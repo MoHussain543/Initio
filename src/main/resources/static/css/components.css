@@ -323,6 +323,13 @@
   font-weight: 600;
 }
 
+.issue-rule,
+.issue-source {
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  color: var(--color-muted);
+}
+
 .issue-detail {
   font-size: 0.875rem;
   color: var(--color-muted);
