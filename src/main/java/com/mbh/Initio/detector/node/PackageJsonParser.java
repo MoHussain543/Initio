@@ -7,6 +7,8 @@ import com.mbh.initio.detector.DetectionException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.LinkedHashSet;
+import java.util.Set;
 public final class PackageJsonParser {
 
 	private static final ObjectMapper MAPPER = new ObjectMapper();
@@ -19,6 +21,7 @@ public final class PackageJsonParser {
 			return new PackageJson(
 					name,
 					enginesNode,
+					scriptNames(root.path("scripts")),
 					hasDependency(root, "typescript"),
 					hasDependency(root, "react"),
 					hasDependency(root, "vite"),
@@ -41,6 +44,17 @@ public final class PackageJsonParser {
 		}
 		return dependencies.propertyNames().stream()
 				.anyMatch(name -> name.equalsIgnoreCase(dependencyName));
+	}
+
+	private static Set<String> scriptNames(JsonNode scripts) {
+		if (!scripts.isObject()) {
+			return Set.of();
+		}
+		Set<String> names = new LinkedHashSet<>();
+		for (String name : scripts.propertyNames()) {
+			names.add(name);
+		}
+		return Set.copyOf(names);
 	}
 
 	private static String text(JsonNode node) {

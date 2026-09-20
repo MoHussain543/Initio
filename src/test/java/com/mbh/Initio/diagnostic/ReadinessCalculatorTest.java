@@ -31,6 +31,7 @@ class ReadinessCalculatorTest {
 				List.of(RuntimeRequirement.declared("java", "25", source)),
 				List.of(),
 				List.of(),
+				List.of(),
 				List.of()
 		);
 		LocalEnvironmentAnalysis local = new LocalEnvironmentAnalysis(

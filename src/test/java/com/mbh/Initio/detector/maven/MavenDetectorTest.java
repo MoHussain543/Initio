@@ -3,6 +3,7 @@ package com.mbh.initio.detector.maven;
 import com.mbh.initio.analysis.DetectionResult;
 import com.mbh.initio.analysis.ProjectContext;
 import com.mbh.initio.model.DetectedTechnology;
+import com.mbh.initio.model.CommandOrigin;
 import com.mbh.initio.model.RequirementStatus;
 import com.mbh.initio.model.RuntimeRequirement;
 import com.mbh.initio.model.TechnologyCategory;
@@ -41,6 +42,18 @@ class MavenDetectorTest {
 		assertEquals("java", java.runtime());
 		assertEquals("25", java.requiredVersion());
 		assertEquals(RequirementStatus.NOT_CHECKED, java.status());
+	}
+
+	@Test
+	void emitsConventionalMavenCommandsForSpringBootProjects() {
+		DetectionResult result = detector.detect(new ProjectContext(FixtureRepositories.springMaven()));
+
+		assertTrue(result.projectCommands().stream().anyMatch(
+				command -> command.command().equals("./mvnw test") && command.origin() == CommandOrigin.CONVENTIONAL
+		));
+		assertTrue(result.projectCommands().stream().anyMatch(
+				command -> command.command().equals("./mvnw spring-boot:run")
+		));
 	}
 
 	@Test

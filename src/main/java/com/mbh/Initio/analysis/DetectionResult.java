@@ -3,6 +3,7 @@ package com.mbh.initio.analysis;
 import com.mbh.initio.model.DetectedTechnology;
 import com.mbh.initio.model.EnvironmentVariableRequirement;
 import com.mbh.initio.model.PortExpectation;
+import com.mbh.initio.model.ProjectCommand;
 import com.mbh.initio.model.ProjectMetadata;
 import com.mbh.initio.model.RuntimeRequirement;
 import com.mbh.initio.model.ServiceRequirement;
@@ -16,7 +17,8 @@ public record DetectionResult(
 		List<RuntimeRequirement> runtimeRequirements,
 		List<EnvironmentVariableRequirement> environmentVariableRequirements,
 		List<ServiceRequirement> serviceRequirements,
-		List<PortExpectation> portExpectations
+		List<PortExpectation> portExpectations,
+		List<ProjectCommand> projectCommands
 ) {
 	public DetectionResult {
 		technologies = List.copyOf(Objects.requireNonNull(technologies, "technologies"));
@@ -26,9 +28,10 @@ public record DetectionResult(
 		);
 		serviceRequirements = List.copyOf(Objects.requireNonNull(serviceRequirements, "serviceRequirements"));
 		portExpectations = List.copyOf(Objects.requireNonNull(portExpectations, "portExpectations"));
+		projectCommands = List.copyOf(Objects.requireNonNull(projectCommands, "projectCommands"));
 	}
 
 	public static DetectionResult empty() {
-		return new DetectionResult(null, List.of(), List.of(), List.of(), List.of(), List.of());
+		return new DetectionResult(null, List.of(), List.of(), List.of(), List.of(), List.of(), List.of());
 	}
 }

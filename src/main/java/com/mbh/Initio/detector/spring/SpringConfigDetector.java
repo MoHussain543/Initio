@@ -46,6 +46,6 @@ public final class SpringConfigDetector implements ProjectDetector {
 		);
 		List<PortExpectation> portExpectations = new ArrayList<>();
 		portExpectations.add(new PortExpectation(port.get(), PortRole.APPLICATION, "Spring Boot application", source));
-		return new DetectionResult(null, List.of(), List.of(), List.of(), List.of(), portExpectations);
+		return new DetectionResult(null, List.of(), List.of(), List.of(), List.of(), portExpectations, List.of());
 	}
 }

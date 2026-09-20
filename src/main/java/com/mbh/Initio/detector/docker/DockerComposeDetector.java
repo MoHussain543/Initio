@@ -72,6 +72,6 @@ public final class DockerComposeDetector implements ProjectDetector {
 		}
 		portExpectations.addAll(portsByNumber.values());
 
-		return new DetectionResult(null, technologies, List.of(), List.of(), serviceRequirements, portExpectations);
+		return new DetectionResult(null, technologies, List.of(), List.of(), serviceRequirements, portExpectations, List.of());
 	}
 }

@@ -31,6 +31,7 @@ class MissingRuntimeRuleTest {
 				List.of(RuntimeRequirement.declared("java", "25", source)),
 				List.of(),
 				List.of(),
+				List.of(),
 				List.of()
 		);
 		AnalysisContext context = new AnalysisContext(

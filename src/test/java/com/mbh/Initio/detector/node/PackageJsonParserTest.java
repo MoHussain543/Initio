@@ -18,6 +18,8 @@ class PackageJsonParserTest {
 		assertEquals(">=22", packageJson.enginesNode());
 		assertTrue(packageJson.typescript());
 		assertTrue(packageJson.vite());
+		assertTrue(packageJson.scriptNames().contains("dev"));
+		assertTrue(packageJson.scriptNames().contains("build"));
 	}
 
 	@Test

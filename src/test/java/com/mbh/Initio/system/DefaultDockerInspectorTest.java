@@ -34,6 +34,7 @@ class DefaultDockerInspectorTest {
 						new ServiceRequirement("postgres", Path.of("docker-compose.yml"), "postgres:16", List.of(5432), source),
 						new ServiceRequirement("redis", Path.of("docker-compose.yml"), "redis:7", List.of(6379), source)
 				),
+				List.of(),
 				List.of()
 		);
 		CommandExecutor commandExecutor = new CommandExecutor() {

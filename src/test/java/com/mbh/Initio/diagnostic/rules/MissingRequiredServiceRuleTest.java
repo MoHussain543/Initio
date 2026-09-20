@@ -29,6 +29,7 @@ class MissingRequiredServiceRuleTest {
 				List.of(),
 				List.of(),
 				List.of(new ServiceRequirement("postgres", Path.of("docker-compose.yml"), "postgres:16", List.of(5432), source)),
+				List.of(),
 				List.of()
 		);
 		AnalysisContext context = new AnalysisContext(

@@ -5,6 +5,7 @@ import com.mbh.initio.model.DetectedTechnology;
 import com.mbh.initio.model.EnvironmentVariableRequirement;
 import com.mbh.initio.model.PortExpectation;
 import com.mbh.initio.model.ProjectAnalysis;
+import com.mbh.initio.model.ProjectCommand;
 import com.mbh.initio.model.ProjectMetadata;
 import com.mbh.initio.model.RuntimeRequirement;
 import com.mbh.initio.model.ServiceRequirement;
@@ -41,6 +42,7 @@ public final class ProjectAnalyzer {
 		List<EnvironmentVariableRequirement> environmentVariableRequirements = new ArrayList<>();
 		List<ServiceRequirement> serviceRequirements = new ArrayList<>();
 		List<PortExpectation> portExpectations = new ArrayList<>();
+		List<ProjectCommand> projectCommands = new ArrayList<>();
 
 		for (ProjectDetector detector : detectors) {
 			if (!detector.supports(context)) {
@@ -53,6 +55,7 @@ public final class ProjectAnalyzer {
 			environmentVariableRequirements.addAll(result.environmentVariableRequirements());
 			serviceRequirements.addAll(result.serviceRequirements());
 			portExpectations.addAll(result.portExpectations());
+			projectCommands.addAll(result.projectCommands());
 		}
 
 		return new ProjectAnalysis(
@@ -62,7 +65,8 @@ public final class ProjectAnalyzer {
 				runtimeRequirements,
 				environmentVariableRequirements,
 				serviceRequirements,
-				portExpectations
+				portExpectations,
+				projectCommands
 		);
 	}
 

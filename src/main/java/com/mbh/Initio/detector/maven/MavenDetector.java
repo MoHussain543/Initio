@@ -7,6 +7,7 @@ import com.mbh.initio.model.DetectedTechnology;
 import com.mbh.initio.model.DetectionConfidence;
 import com.mbh.initio.model.DetectionSource;
 import com.mbh.initio.model.ProjectMetadata;
+import com.mbh.initio.model.ProjectCommand;
 import com.mbh.initio.model.RuntimeRequirement;
 import com.mbh.initio.model.TechnologyCategory;
 
@@ -67,7 +68,8 @@ public final class MavenDetector implements ProjectDetector {
 			requirements.add(RuntimeRequirement.declared("java", javaVersion, pomSource));
 		}
 
-		return new DetectionResult(metadata(pom), technologies, requirements, List.of(), List.of(), List.of());
+		List<ProjectCommand> projectCommands = MavenConventionalCommands.conventionalCommands(context, isSpringBoot(pom));
+		return new DetectionResult(metadata(pom), technologies, requirements, List.of(), List.of(), List.of(), projectCommands);
 	}
 
 	private static boolean isSpringBoot(MavenPom pom) {

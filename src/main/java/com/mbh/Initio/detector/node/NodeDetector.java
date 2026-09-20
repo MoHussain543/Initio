@@ -7,6 +7,7 @@ import com.mbh.initio.model.DetectedTechnology;
 import com.mbh.initio.model.DetectionConfidence;
 import com.mbh.initio.model.DetectionSource;
 import com.mbh.initio.model.ProjectMetadata;
+import com.mbh.initio.model.ProjectCommand;
 import com.mbh.initio.model.RuntimeRequirement;
 import com.mbh.initio.model.TechnologyCategory;
 
@@ -40,6 +41,7 @@ public final class NodeDetector implements ProjectDetector {
 		List<Path> packageJsonPaths = NodeProjectLocator.locate(context);
 		Map<String, DetectedTechnology> technologies = new LinkedHashMap<>();
 		List<RuntimeRequirement> runtimeRequirements = new ArrayList<>();
+		List<ProjectCommand> projectCommands = new ArrayList<>();
 		ProjectMetadata metadata = null;
 
 		for (Path packageJsonPath : packageJsonPaths) {
@@ -74,9 +76,18 @@ public final class NodeDetector implements ProjectDetector {
 			if (hasText(packageJson.enginesNode())) {
 				runtimeRequirements.add(RuntimeRequirement.declared("node", packageJson.enginesNode(), source));
 			}
+			projectCommands.addAll(NpmScriptCommands.fromScripts(packageJson.scriptNames(), source));
 		}
 
-		return new DetectionResult(metadata, List.copyOf(technologies.values()), runtimeRequirements, List.of(), List.of(), List.of());
+		return new DetectionResult(
+				metadata,
+				List.copyOf(technologies.values()),
+				runtimeRequirements,
+				List.of(),
+				List.of(),
+				List.of(),
+				projectCommands
+		);
 	}
 
 	private static DetectedTechnology language(
