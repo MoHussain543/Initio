@@ -1,4 +1,4 @@
-package com.mbh.Initio.testsupport;
+package com.mbh.initio.testsupport;
 
 import java.net.URISyntaxException;
 import java.net.URL;

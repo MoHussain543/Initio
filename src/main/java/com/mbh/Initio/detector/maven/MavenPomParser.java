@@ -1,6 +1,6 @@
-package com.mbh.Initio.detector.maven;
+package com.mbh.initio.detector.maven;
 
-import com.mbh.Initio.detector.DetectionException;
+import com.mbh.initio.detector.DetectionException;
 import org.w3c.dom.Document;
 
 import javax.xml.XMLConstants;

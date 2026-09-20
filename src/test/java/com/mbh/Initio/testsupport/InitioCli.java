@@ -1,6 +1,6 @@
-package com.mbh.Initio.testsupport;
+package com.mbh.initio.testsupport;
 
-import com.mbh.Initio.cli.InitioCommand;
+import com.mbh.initio.cli.InitioCommand;
 import picocli.CommandLine;
 
 import java.io.PrintWriter;

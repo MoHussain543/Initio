@@ -1,9 +1,9 @@
-package com.mbh.Initio.cli;
+package com.mbh.initio.cli;
 
-import com.mbh.Initio.analysis.ProjectAnalyzers;
-import com.mbh.Initio.cli.format.CheckReportFormatter;
-import com.mbh.Initio.detector.DetectionException;
-import com.mbh.Initio.model.ProjectAnalysis;
+import com.mbh.initio.analysis.ProjectAnalyzers;
+import com.mbh.initio.cli.format.CheckReportFormatter;
+import com.mbh.initio.detector.DetectionException;
+import com.mbh.initio.model.ProjectAnalysis;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Parameters;

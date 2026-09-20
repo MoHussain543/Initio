@@ -1,8 +1,8 @@
-package com.mbh.Initio.cli;
+package com.mbh.initio.cli;
 
-import com.mbh.Initio.testsupport.FixtureRepositories;
-import com.mbh.Initio.testsupport.InitioCli;
-import com.mbh.Initio.testsupport.InitioCli.CommandResult;
+import com.mbh.initio.testsupport.FixtureRepositories;
+import com.mbh.initio.testsupport.InitioCli;
+import com.mbh.initio.testsupport.InitioCli.CommandResult;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

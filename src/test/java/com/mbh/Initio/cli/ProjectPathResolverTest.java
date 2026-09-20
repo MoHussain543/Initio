@@ -1,6 +1,6 @@
-package com.mbh.Initio.cli;
+package com.mbh.initio.cli;
 
-import com.mbh.Initio.testsupport.FixtureRepositories;
+import com.mbh.initio.testsupport.FixtureRepositories;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 

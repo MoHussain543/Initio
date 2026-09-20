@@ -1,12 +1,12 @@
-package com.mbh.Initio.detector.maven;
+package com.mbh.initio.detector.maven;
 
-import com.mbh.Initio.analysis.DetectionResult;
-import com.mbh.Initio.analysis.ProjectContext;
-import com.mbh.Initio.model.DetectedTechnology;
-import com.mbh.Initio.model.RequirementStatus;
-import com.mbh.Initio.model.RuntimeRequirement;
-import com.mbh.Initio.model.TechnologyCategory;
-import com.mbh.Initio.testsupport.FixtureRepositories;
+import com.mbh.initio.analysis.DetectionResult;
+import com.mbh.initio.analysis.ProjectContext;
+import com.mbh.initio.model.DetectedTechnology;
+import com.mbh.initio.model.RequirementStatus;
+import com.mbh.initio.model.RuntimeRequirement;
+import com.mbh.initio.model.TechnologyCategory;
+import com.mbh.initio.testsupport.FixtureRepositories;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;

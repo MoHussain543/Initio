@@ -1,4 +1,4 @@
-package com.mbh.Initio.cli;
+package com.mbh.initio.cli;
 
 import picocli.CommandLine;
 import picocli.CommandLine.Command;

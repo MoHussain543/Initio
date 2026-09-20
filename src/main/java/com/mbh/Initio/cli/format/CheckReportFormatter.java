@@ -1,8 +1,8 @@
-package com.mbh.Initio.cli.format;
+package com.mbh.initio.cli.format;
 
-import com.mbh.Initio.model.DetectedTechnology;
-import com.mbh.Initio.model.ProjectAnalysis;
-import com.mbh.Initio.model.RuntimeRequirement;
+import com.mbh.initio.model.DetectedTechnology;
+import com.mbh.initio.model.ProjectAnalysis;
+import com.mbh.initio.model.RuntimeRequirement;
 
 import java.io.PrintWriter;
 import java.util.Comparator;

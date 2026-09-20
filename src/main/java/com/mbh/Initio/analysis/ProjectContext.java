@@ -1,4 +1,4 @@
-package com.mbh.Initio.analysis;
+package com.mbh.initio.analysis;
 
 import java.nio.file.Files;
 import java.nio.file.Path;

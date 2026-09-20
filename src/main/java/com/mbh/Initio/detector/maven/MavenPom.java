@@ -1,4 +1,4 @@
-package com.mbh.Initio.detector.maven;
+package com.mbh.initio.detector.maven;
 
 public record MavenPom(
 		String artifactId,

@@ -1,7 +1,7 @@
-package com.mbh.Initio.detector.maven;
+package com.mbh.initio.detector.maven;
 
-import com.mbh.Initio.detector.DetectionException;
-import com.mbh.Initio.testsupport.FixtureRepositories;
+import com.mbh.initio.detector.DetectionException;
+import com.mbh.initio.testsupport.FixtureRepositories;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

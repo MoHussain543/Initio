@@ -1,7 +1,7 @@
-package com.mbh.Initio.detector;
+package com.mbh.initio.detector;
 
-import com.mbh.Initio.analysis.DetectionResult;
-import com.mbh.Initio.analysis.ProjectContext;
+import com.mbh.initio.analysis.DetectionResult;
+import com.mbh.initio.analysis.ProjectContext;
 
 public interface ProjectDetector {
 

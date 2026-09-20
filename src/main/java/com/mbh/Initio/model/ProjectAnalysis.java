@@ -1,4 +1,4 @@
-package com.mbh.Initio.model;
+package com.mbh.initio.model;
 
 import java.nio.file.Path;
 import java.util.List;

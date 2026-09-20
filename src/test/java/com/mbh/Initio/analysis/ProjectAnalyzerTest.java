@@ -1,10 +1,10 @@
-package com.mbh.Initio.analysis;
+package com.mbh.initio.analysis;
 
-import com.mbh.Initio.detector.maven.MavenDetector;
-import com.mbh.Initio.model.ProjectAnalysis;
-import com.mbh.Initio.model.RequirementStatus;
-import com.mbh.Initio.model.TechnologyCategory;
-import com.mbh.Initio.testsupport.FixtureRepositories;
+import com.mbh.initio.detector.maven.MavenDetector;
+import com.mbh.initio.model.ProjectAnalysis;
+import com.mbh.initio.model.RequirementStatus;
+import com.mbh.initio.model.TechnologyCategory;
+import com.mbh.initio.testsupport.FixtureRepositories;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

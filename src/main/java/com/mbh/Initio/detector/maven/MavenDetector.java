@@ -1,14 +1,14 @@
-package com.mbh.Initio.detector.maven;
+package com.mbh.initio.detector.maven;
 
-import com.mbh.Initio.analysis.DetectionResult;
-import com.mbh.Initio.analysis.ProjectContext;
-import com.mbh.Initio.detector.ProjectDetector;
-import com.mbh.Initio.model.DetectedTechnology;
-import com.mbh.Initio.model.DetectionConfidence;
-import com.mbh.Initio.model.DetectionSource;
-import com.mbh.Initio.model.ProjectMetadata;
-import com.mbh.Initio.model.RuntimeRequirement;
-import com.mbh.Initio.model.TechnologyCategory;
+import com.mbh.initio.analysis.DetectionResult;
+import com.mbh.initio.analysis.ProjectContext;
+import com.mbh.initio.detector.ProjectDetector;
+import com.mbh.initio.model.DetectedTechnology;
+import com.mbh.initio.model.DetectionConfidence;
+import com.mbh.initio.model.DetectionSource;
+import com.mbh.initio.model.ProjectMetadata;
+import com.mbh.initio.model.RuntimeRequirement;
+import com.mbh.initio.model.TechnologyCategory;
 
 import java.nio.file.Path;
 import java.util.ArrayList;

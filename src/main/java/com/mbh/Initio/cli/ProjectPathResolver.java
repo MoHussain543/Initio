@@ -1,4 +1,4 @@
-package com.mbh.Initio.cli;
+package com.mbh.initio.cli;
 
 import java.nio.file.Files;
 import java.nio.file.Path;

@@ -1,8 +1,8 @@
-package com.mbh.Initio.analysis;
+package com.mbh.initio.analysis;
 
-import com.mbh.Initio.model.DetectedTechnology;
-import com.mbh.Initio.model.ProjectMetadata;
-import com.mbh.Initio.model.RuntimeRequirement;
+import com.mbh.initio.model.DetectedTechnology;
+import com.mbh.initio.model.ProjectMetadata;
+import com.mbh.initio.model.RuntimeRequirement;
 
 import java.util.List;
 import java.util.Objects;

@@ -1,4 +1,4 @@
-package com.mbh.Initio.detector;
+package com.mbh.initio.detector;
 
 public class DetectionException extends RuntimeException {
 

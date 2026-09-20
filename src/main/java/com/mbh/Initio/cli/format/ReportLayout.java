@@ -1,4 +1,4 @@
-package com.mbh.Initio.cli.format;
+package com.mbh.initio.cli.format;
 
 import java.io.PrintWriter;
 

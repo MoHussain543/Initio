@@ -1,6 +1,6 @@
-package com.mbh.Initio;
+package com.mbh.initio;
 
-import com.mbh.Initio.cli.InitioCommand;
+import com.mbh.initio.cli.InitioCommand;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import picocli.CommandLine;
 

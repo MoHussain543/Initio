@@ -1,6 +1,6 @@
-package com.mbh.Initio.analysis;
+package com.mbh.initio.analysis;
 
-import com.mbh.Initio.detector.maven.MavenDetector;
+import com.mbh.initio.detector.maven.MavenDetector;
 
 public final class ProjectAnalyzers {
 
