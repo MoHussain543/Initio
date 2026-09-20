@@ -4,10 +4,14 @@ import com.mbh.initio.analysis.AnalysisContext;
 import com.mbh.initio.model.DiagnosticIssue;
 import com.mbh.initio.model.EnvironmentVariableRequirement;
 import com.mbh.initio.model.ReadinessScore;
+import com.mbh.initio.model.PortExpectation;
+import com.mbh.initio.model.PortRole;
 import com.mbh.initio.model.RuntimeRequirement;
 import com.mbh.initio.model.ServiceRequirement;
+import com.mbh.initio.model.ServiceStatus;
 
 import java.util.List;
+import java.util.Optional;
 
 public final class ReadinessCalculator {
 
@@ -58,6 +62,25 @@ public final class ReadinessCalculator {
 			}
 			verifiedTotal++;
 			if (outcome == ServiceRequirementEvaluator.Outcome.RUNNING) {
+				verifiedPassed++;
+			}
+		}
+
+		for (PortExpectation expectation : context.project().portExpectations()) {
+			if (expectation.role() != PortRole.APPLICATION) {
+				continue;
+			}
+			PortExpectationEvaluator.Outcome outcome = PortExpectationEvaluator.outcome(
+					expectation,
+					context.local().portObservation(expectation.port()),
+					Optional.<ServiceStatus>empty()
+			);
+			if (outcome == PortExpectationEvaluator.Outcome.UNVERIFIED) {
+				unverifiedCount++;
+				continue;
+			}
+			verifiedTotal++;
+			if (outcome == PortExpectationEvaluator.Outcome.AVAILABLE) {
 				verifiedPassed++;
 			}
 		}

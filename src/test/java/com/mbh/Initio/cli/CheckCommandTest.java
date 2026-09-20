@@ -33,6 +33,8 @@ class CheckCommandTest {
 		assertTrue(output.stdout().contains("Java 25"));
 		assertTrue(output.stdout().contains("Runtime"));
 		assertTrue(output.stdout().contains("Project readiness:"));
+		assertTrue(output.stdout().contains("Ports"));
+		assertTrue(output.stdout().contains("8080"));
 	}
 
 	@Test
@@ -63,6 +65,8 @@ class CheckCommandTest {
 		assertTrue(output.stdout().contains("postgres"));
 		assertTrue(output.stdout().contains("redis"));
 		assertTrue(output.stdout().contains("Docker Compose"));
+		assertTrue(output.stdout().contains("Ports"));
+		assertTrue(output.stdout().contains("5432"));
 	}
 
 	@Test

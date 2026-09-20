@@ -9,6 +9,7 @@ import com.mbh.initio.model.InstalledRuntime;
 import com.mbh.initio.model.LocalEnvironmentAnalysis;
 import com.mbh.initio.system.DockerInspector;
 import com.mbh.initio.system.LocalEnvironmentInspector;
+import com.mbh.initio.system.PortInspector;
 import com.mbh.initio.system.RuntimeInspector;
 import com.mbh.initio.testsupport.FixtureRepositories;
 import org.junit.jupiter.api.Test;
@@ -39,9 +40,10 @@ class AnalysisEngineTest {
 			}
 		};
 		DockerInspector dockerInspector = project -> List.of();
+		PortInspector portInspector = ports -> List.of();
 		AnalysisEngine engine = new AnalysisEngine(
 				ProjectAnalyzers.create(),
-				new LocalEnvironmentInspector(runtimeInspector, dockerInspector),
+				new LocalEnvironmentInspector(runtimeInspector, dockerInspector, portInspector),
 				new DiagnosticEngine(List.of(
 						new MissingRuntimeRule(),
 						new IncompatibleRuntimeVersionRule(),

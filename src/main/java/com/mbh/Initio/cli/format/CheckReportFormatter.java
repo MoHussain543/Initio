@@ -8,9 +8,14 @@ import com.mbh.initio.model.DetectedTechnology;
 import com.mbh.initio.model.EnvironmentVariableRequirement;
 import com.mbh.initio.model.InstalledRuntime;
 import com.mbh.initio.model.ProjectAnalysis;
+import com.mbh.initio.diagnostic.PortExpectationEvaluator;
+import com.mbh.initio.diagnostic.ServiceRequirementEvaluator;
+import com.mbh.initio.model.PortExpectation;
+import com.mbh.initio.model.PortObservation;
+import com.mbh.initio.model.PortRole;
 import com.mbh.initio.model.RuntimeRequirement;
 import com.mbh.initio.model.ServiceRequirement;
-import com.mbh.initio.diagnostic.ServiceRequirementEvaluator;
+import com.mbh.initio.model.ServiceStatus;
 
 import java.io.PrintWriter;
 import java.util.Comparator;
@@ -69,6 +74,16 @@ public final class CheckReportFormatter {
 		}
 		ReportLayout.blank(out);
 
+		ReportLayout.section(out, "Ports");
+		if (project.portExpectations().isEmpty()) {
+			out.println("No ports declared");
+		} else {
+			for (PortExpectation expectation : project.portExpectations()) {
+				out.println(formatPortCheck(expectation, result));
+			}
+		}
+		ReportLayout.blank(out);
+
 		ReportLayout.section(out, "Result");
 		out.println("Project readiness: " + result.readiness().percent() + "%");
 		out.println(result.readiness().summary());
@@ -101,6 +116,46 @@ public final class CheckReportFormatter {
 			case STOPPED -> "✗ " + label + " — not running";
 			case RUNNING -> "✓ " + label + " — running";
 		};
+	}
+
+	private static String formatPortCheck(PortExpectation expectation, AnalysisResult result) {
+		PortExpectationEvaluator.Outcome outcome = PortExpectationEvaluator.outcome(
+				expectation,
+				result.local().portObservation(expectation.port()),
+				linkedService(result, expectation.port())
+		);
+		String label = expectation.port() + " — " + expectation.label();
+		Optional<PortObservation> observation = result.local().portObservation(expectation.port());
+		String occupant = observation.map(PortObservation::occupantHint).orElse(null);
+		return switch (outcome) {
+			case UNVERIFIED -> label + " — Could not verify";
+			case AVAILABLE -> "✓ " + label + " — available";
+			case NOT_IN_USE -> label + " — not in use";
+			case IN_USE_BY_EXPECTED_SERVICE -> {
+				if (occupant != null && !occupant.isBlank()) {
+					yield "✓ " + label + " — in use by " + occupant;
+				}
+				yield "✓ " + label + " — in use by expected service";
+			}
+			case CONFLICT -> {
+				if (expectation.role() == PortRole.APPLICATION) {
+					yield "✗ " + label + " — occupied"
+							+ (occupant == null ? "" : " (" + occupant + ")");
+				}
+				yield "✗ " + label + " — unexpected occupant"
+						+ (occupant == null ? "" : " (" + occupant + ")");
+			}
+		};
+	}
+
+	private static Optional<ServiceStatus> linkedService(AnalysisResult result, int port) {
+		Optional<ServiceRequirement> requirement = result.project().serviceRequirements().stream()
+				.filter(entry -> entry.publishedHostPorts().contains(port))
+				.findFirst();
+		if (requirement.isEmpty()) {
+			return Optional.empty();
+		}
+		return result.local().serviceStatus(requirement.get().serviceName());
 	}
 
 	private static String formatEnvironmentCheck(EnvironmentVariableRequirement requirement, AnalysisResult result) {

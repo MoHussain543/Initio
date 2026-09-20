@@ -18,10 +18,16 @@ public final class LocalEnvironmentInspector {
 
 	private final RuntimeInspector runtimeInspector;
 	private final DockerInspector dockerInspector;
+	private final PortInspector portInspector;
 
-	public LocalEnvironmentInspector(RuntimeInspector runtimeInspector, DockerInspector dockerInspector) {
+	public LocalEnvironmentInspector(
+			RuntimeInspector runtimeInspector,
+			DockerInspector dockerInspector,
+			PortInspector portInspector
+	) {
 		this.runtimeInspector = Objects.requireNonNull(runtimeInspector, "runtimeInspector");
 		this.dockerInspector = Objects.requireNonNull(dockerInspector, "dockerInspector");
+		this.portInspector = Objects.requireNonNull(portInspector, "portInspector");
 	}
 
 	public LocalEnvironmentAnalysis inspect(ProjectAnalysis project) {
@@ -45,10 +51,16 @@ public final class LocalEnvironmentInspector {
 
 		List<ServiceStatus> serviceStatuses = dockerInspector.inspectServices(project);
 
+		List<Integer> ports = project.portExpectations().stream()
+				.map(expectation -> expectation.port())
+				.toList();
+		var portObservations = portInspector.inspectPorts(ports);
+
 		return new LocalEnvironmentAnalysis(
 				List.copyOf(runtimes.values()),
 				List.copyOf(environmentStatuses),
-				List.copyOf(serviceStatuses)
+				List.copyOf(serviceStatuses),
+				List.copyOf(portObservations)
 		);
 	}
 

@@ -36,6 +36,7 @@ class MissingEnvironmentVariableRuleTest {
 				new LocalEnvironmentAnalysis(
 						List.of(),
 						List.of(EnvironmentVariableStatus.verified("JWT_SECRET", PresenceStatus.MISSING)),
+						List.of(),
 						List.of()
 				)
 		);

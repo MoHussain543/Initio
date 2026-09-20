@@ -7,7 +7,8 @@ import java.util.Optional;
 public record LocalEnvironmentAnalysis(
 		List<InstalledRuntime> installedRuntimes,
 		List<EnvironmentVariableStatus> environmentVariableStatuses,
-		List<ServiceStatus> serviceStatuses
+		List<ServiceStatus> serviceStatuses,
+		List<PortObservation> portObservations
 ) {
 	public LocalEnvironmentAnalysis {
 		installedRuntimes = List.copyOf(Objects.requireNonNull(installedRuntimes, "installedRuntimes"));
@@ -15,6 +16,7 @@ public record LocalEnvironmentAnalysis(
 				Objects.requireNonNull(environmentVariableStatuses, "environmentVariableStatuses")
 		);
 		serviceStatuses = List.copyOf(Objects.requireNonNull(serviceStatuses, "serviceStatuses"));
+		portObservations = List.copyOf(Objects.requireNonNull(portObservations, "portObservations"));
 	}
 
 	public Optional<InstalledRuntime> installedRuntime(String runtime) {
@@ -32,6 +34,12 @@ public record LocalEnvironmentAnalysis(
 	public Optional<ServiceStatus> serviceStatus(String serviceName) {
 		return serviceStatuses.stream()
 				.filter(entry -> entry.serviceName().equals(serviceName))
+				.findFirst();
+	}
+
+	public Optional<PortObservation> portObservation(int port) {
+		return portObservations.stream()
+				.filter(entry -> entry.port() == port)
 				.findFirst();
 	}
 }

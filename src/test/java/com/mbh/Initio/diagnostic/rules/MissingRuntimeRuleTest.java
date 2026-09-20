@@ -38,6 +38,7 @@ class MissingRuntimeRuleTest {
 				new LocalEnvironmentAnalysis(
 						List.of(InstalledRuntime.missing("java")),
 						List.of(),
+						List.of(),
 						List.of()
 				)
 		);

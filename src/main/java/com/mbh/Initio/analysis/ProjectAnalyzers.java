@@ -5,6 +5,7 @@ import com.mbh.initio.detector.docker.DockerDetector;
 import com.mbh.initio.detector.environment.EnvironmentDetector;
 import com.mbh.initio.detector.maven.MavenDetector;
 import com.mbh.initio.detector.node.NodeDetector;
+import com.mbh.initio.detector.spring.SpringConfigDetector;
 
 public final class ProjectAnalyzers {
 
@@ -17,7 +18,8 @@ public final class ProjectAnalyzers {
 				new NodeDetector(),
 				new EnvironmentDetector(),
 				new DockerComposeDetector(),
-				new DockerDetector()
+				new DockerDetector(),
+				new SpringConfigDetector()
 		);
 	}
 }
