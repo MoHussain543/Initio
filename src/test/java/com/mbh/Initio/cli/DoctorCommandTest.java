@@ -30,6 +30,14 @@ class DoctorCommandTest {
 	}
 
 	@Test
+	void doctorReportsDeclarationDriftWarningsForFullstackFixture() {
+		CommandResult output = InitioCli.execute("doctor", FixtureRepositories.fullstack().toString());
+
+		assertTrue(output.stdout().contains("[WARN]"));
+		assertTrue(output.stdout().contains("Conflicting Node engine declarations"));
+	}
+
+	@Test
 	void doctorSucceedsWhenNoErrorsAreReported() {
 		CommandResult output = InitioCli.execute("doctor", FixtureRepositories.empty().toString());
 

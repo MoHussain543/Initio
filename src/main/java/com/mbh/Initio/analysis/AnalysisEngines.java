@@ -3,6 +3,7 @@ package com.mbh.initio.analysis;
 import com.mbh.initio.diagnostic.DiagnosticEngine;
 import com.mbh.initio.diagnostic.ReadinessCalculator;
 import com.mbh.initio.diagnostic.rules.IncompatibleRuntimeVersionRule;
+import com.mbh.initio.diagnostic.rules.DeclarationDriftRule;
 import com.mbh.initio.diagnostic.rules.DockerUnavailableRule;
 import com.mbh.initio.diagnostic.rules.MissingEnvironmentVariableRule;
 import com.mbh.initio.diagnostic.rules.MissingRequiredServiceRule;
@@ -33,7 +34,8 @@ public final class AnalysisEngines {
 				new MissingEnvironmentVariableRule(),
 				new DockerUnavailableRule(),
 				new MissingRequiredServiceRule(),
-				new PortConflictRule()
+				new PortConflictRule(),
+				new DeclarationDriftRule()
 		));
 		return new AnalysisEngine(
 				ProjectAnalyzers.create(),

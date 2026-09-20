@@ -49,6 +49,10 @@ public final class FixtureRepositories {
 		return resolve("dockerized");
 	}
 
+	public static Path ciJavaDrift() {
+		return resolve("ci-java-drift");
+	}
+
 	private static Path resolve(String name) {
 		URL resource = FixtureRepositories.class.getResource("/fixtures/" + name);
 		if (resource == null) {

@@ -38,7 +38,7 @@ public final class VersionMatcher {
 		return exact != null && installedMajor.equals(exact);
 	}
 
-	static Integer majorVersion(String version) {
+	public static Integer majorVersion(String version) {
 		Matcher matcher = LEADING_NUMBER.matcher(version);
 		if (!matcher.find()) {
 			return null;
