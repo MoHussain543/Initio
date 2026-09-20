@@ -17,6 +17,9 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AnalysisEngineTest {
@@ -58,5 +61,17 @@ class AnalysisEngineTest {
 		assertEquals(2, result.local().installedRuntimes().size());
 		assertTrue(result.project().runtimeRequirements().stream().anyMatch(requirement -> "node".equals(requirement.runtime())));
 		assertEquals(100, result.readiness().percent());
+		assertFalse(result.effective().hasConfig());
+		assertSame(result.project(), result.effective().project());
+	}
+
+	@Test
+	void invalidInitioYmlStopsThePipeline() {
+		AnalysisEngine engine = AnalysisEngines.createDefault();
+
+		assertThrows(
+				com.mbh.initio.projectconfig.InitioConfigException.class,
+				() -> engine.run(FixtureRepositories.invalidInitioConfig())
+		);
 	}
 }

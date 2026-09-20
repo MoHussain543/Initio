@@ -1,6 +1,7 @@
 package com.mbh.initio.web.advice;
 
 import com.mbh.initio.detector.DetectionException;
+import com.mbh.initio.projectconfig.InitioConfigException;
 import com.mbh.initio.web.dto.ApiErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,14 @@ public class InitioApiExceptionHandler {
 		return ResponseEntity.badRequest().body(new ApiErrorResponse(
 				"PROJECT_ANALYSIS_FAILED",
 				safeMessage(exception, "The project directory could not be analyzed.")
+		));
+	}
+
+	@ExceptionHandler(InitioConfigException.class)
+	public ResponseEntity<ApiErrorResponse> handleInvalidConfig(InitioConfigException exception) {
+		return ResponseEntity.badRequest().body(new ApiErrorResponse(
+				"INVALID_INITIO_CONFIG",
+				safeMessage(exception, "The project configuration could not be applied.")
 		));
 	}
 

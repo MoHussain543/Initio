@@ -4,6 +4,7 @@ import com.mbh.initio.analysis.AnalysisEngines;
 import com.mbh.initio.analysis.AnalysisResult;
 import com.mbh.initio.cli.format.CheckReportFormatter;
 import com.mbh.initio.detector.DetectionException;
+import com.mbh.initio.projectconfig.InitioConfigException;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Parameters;
@@ -35,7 +36,7 @@ public class CheckCommand implements Callable<Integer> {
 			AnalysisResult result = AnalysisEngines.createDefault().run(projectPath);
 			new CheckReportFormatter().write(result, spec.commandLine().getOut());
 			return 0;
-		} catch (IllegalArgumentException | DetectionException exception) {
+		} catch (IllegalArgumentException | DetectionException | InitioConfigException exception) {
 			spec.commandLine().getErr().println(exception.getMessage());
 			return 1;
 		}

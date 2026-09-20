@@ -4,6 +4,7 @@ import com.mbh.initio.analysis.AnalysisEngines;
 import com.mbh.initio.analysis.AnalysisResult;
 import com.mbh.initio.cli.format.DoctorReportFormatter;
 import com.mbh.initio.detector.DetectionException;
+import com.mbh.initio.projectconfig.InitioConfigException;
 import com.mbh.initio.model.DiagnosticIssue;
 import com.mbh.initio.model.DiagnosticSeverity;
 import picocli.CommandLine.Command;
@@ -37,7 +38,7 @@ public class DoctorCommand implements Callable<Integer> {
 			AnalysisResult result = AnalysisEngines.createDefault().run(projectPath);
 			new DoctorReportFormatter().write(result, spec.commandLine().getOut());
 			return hasErrors(result) ? 1 : 0;
-		} catch (IllegalArgumentException | DetectionException exception) {
+		} catch (IllegalArgumentException | DetectionException | InitioConfigException exception) {
 			spec.commandLine().getErr().println(exception.getMessage());
 			return 1;
 		}

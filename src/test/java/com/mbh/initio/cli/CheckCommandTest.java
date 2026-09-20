@@ -78,4 +78,14 @@ class CheckCommandTest {
 		assertEquals(1, output.exitCode());
 		assertTrue(output.stderr().contains("does not exist"));
 	}
+
+	@Test
+	void checkFailsCleanlyWhenInitioYmlIsInvalid() {
+		CommandResult output = InitioCli.execute("check", FixtureRepositories.invalidInitioConfig().toString());
+
+		assertEquals(1, output.exitCode());
+		assertTrue(output.stderr().contains("Initio could not analyze this project"));
+		assertTrue(output.stderr().contains("commands[0].category"));
+		assertTrue(output.stderr().contains("initio config validate"));
+	}
 }
