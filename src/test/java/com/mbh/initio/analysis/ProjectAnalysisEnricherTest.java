@@ -61,6 +61,20 @@ class ProjectAnalysisEnricherTest {
 	}
 
 	@Test
+	void configuredCommandsAreAddedWithConfiguredOrigin() {
+		ProjectAnalysis detected = analyzer.analyze(FixtureRepositories.withInitioConfig());
+
+		EffectiveProjectAnalysis effective = enricher.enrich(detected);
+
+		assertTrue(detected.projectCommands().isEmpty());
+		assertTrue(effective.project().projectCommands().stream().anyMatch(command ->
+				command.command().equals("./scripts/integration-test.sh")
+						&& command.origin() == com.mbh.initio.model.CommandOrigin.CONFIGURED
+						&& command.source().file().toString().contains("initio.yml")
+		));
+	}
+
+	@Test
 	void invalidConfigFailsWithControlledMessage() {
 		ProjectAnalysis detected = analyzer.analyze(FixtureRepositories.invalidInitioConfig());
 

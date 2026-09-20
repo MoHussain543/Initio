@@ -1,9 +1,12 @@
 package com.mbh.initio.analysis;
 
+import com.mbh.initio.model.CommandOrigin;
 import com.mbh.initio.model.DetectionConfidence;
 import com.mbh.initio.model.DetectionSource;
 import com.mbh.initio.model.EnvironmentVariableRequirement;
 import com.mbh.initio.model.ProjectAnalysis;
+import com.mbh.initio.model.ProjectCommand;
+import com.mbh.initio.projectconfig.ConfiguredCommand;
 import com.mbh.initio.projectconfig.InitioConfigException;
 import com.mbh.initio.projectconfig.InitioConfigLoadResult;
 import com.mbh.initio.projectconfig.InitioConfigLoader;
@@ -46,7 +49,9 @@ public final class ProjectAnalysisEnricher {
 		Objects.requireNonNull(config, "config");
 		Objects.requireNonNull(configFile, "configFile");
 		List<EnvironmentVariableRequirement> environment = mergeEnvironment(detected, config, configFile);
-		if (environment == detected.environmentVariableRequirements()) {
+		List<ProjectCommand> commands = mergeCommands(detected, config, configFile);
+		if (environment == detected.environmentVariableRequirements()
+				&& commands == detected.projectCommands()) {
 			return detected;
 		}
 		return new ProjectAnalysis(
@@ -57,7 +62,7 @@ public final class ProjectAnalysisEnricher {
 				environment,
 				detected.serviceRequirements(),
 				detected.portExpectations(),
-				detected.projectCommands(),
+				commands,
 				detected.ciExpectations()
 		);
 	}
@@ -87,6 +92,41 @@ public final class ProjectAnalysisEnricher {
 		}
 		if (!added) {
 			return detected.environmentVariableRequirements();
+		}
+		return List.copyOf(merged);
+	}
+
+	private static List<ProjectCommand> mergeCommands(
+			ProjectAnalysis detected,
+			InitioProjectConfig config,
+			Path configFile
+	) {
+		if (config.commands().isEmpty()) {
+			return detected.projectCommands();
+		}
+		Set<String> seenCommands = new LinkedHashSet<>();
+		List<ProjectCommand> merged = new ArrayList<>();
+		for (ProjectCommand command : detected.projectCommands()) {
+			seenCommands.add(command.command());
+			merged.add(command);
+		}
+		DetectionSource source = configuredSource(detected.projectPath(), configFile);
+		boolean added = false;
+		for (ConfiguredCommand configured : config.commands()) {
+			if (!seenCommands.add(configured.command())) {
+				continue;
+			}
+			merged.add(new ProjectCommand(
+					configured.name(),
+					configured.command(),
+					configured.category(),
+					CommandOrigin.CONFIGURED,
+					source
+			));
+			added = true;
+		}
+		if (!added) {
+			return detected.projectCommands();
 		}
 		return List.copyOf(merged);
 	}

@@ -47,4 +47,16 @@ class AnalysisResponseMapperTest {
 				"INTERNAL_API_KEY".equals(row.name()) && row.source().contains("initio.yml")));
 		assertTrue(response.environment().stream().noneMatch(row -> row.name() == null));
 	}
+
+	@Test
+	void configuredCommandsHaveConfiguredOrigin() {
+		AnalysisResult result = AnalysisEngines.createDefault().run(FixtureRepositories.withInitioConfig());
+
+		var response = mapper.toResponse(result);
+		assertTrue(response.commands().stream().anyMatch(command ->
+				"./scripts/integration-test.sh".equals(command.command())
+						&& "CONFIGURED".equals(command.origin())
+						&& command.sourceFile().contains("initio.yml")
+		));
+	}
 }

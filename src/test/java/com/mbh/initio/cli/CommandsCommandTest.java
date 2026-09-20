@@ -45,4 +45,14 @@ class CommandsCommandTest {
 		assertTrue(output.stdout().contains("make test"));
 		assertTrue(output.stdout().contains("Inferred"));
 	}
+
+	@Test
+	void commandsListsConfiguredCommandsFromInitioYml() {
+		CommandResult output = InitioCli.execute("commands", FixtureRepositories.withInitioConfig().toString());
+
+		assertEquals(0, output.exitCode());
+		assertTrue(output.stdout().contains("./scripts/integration-test.sh"));
+		assertTrue(output.stdout().contains("Configured"));
+		assertTrue(output.stdout().contains("initio.yml"));
+	}
 }
