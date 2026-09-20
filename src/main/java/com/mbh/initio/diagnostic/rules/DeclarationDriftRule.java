@@ -2,6 +2,7 @@ package com.mbh.initio.diagnostic.rules;
 
 import com.mbh.initio.analysis.AnalysisContext;
 import com.mbh.initio.diagnostic.DiagnosticRule;
+import com.mbh.initio.diagnostic.DiagnosticRuleId;
 import com.mbh.initio.diagnostic.VersionDriftHelper;
 import com.mbh.initio.model.CiExpectation;
 import com.mbh.initio.model.DiagnosticIssue;
@@ -46,6 +47,7 @@ public final class DeclarationDriftRule implements DiagnosticRule {
 				.map(DeclarationDriftRule::formatRuntimeDeclaration)
 				.collect(Collectors.joining(System.lineSeparator()));
 		return java.util.Optional.of(new DiagnosticIssue(
+				DiagnosticRuleId.DECLARATION_DRIFT,
 				DiagnosticSeverity.WARNING,
 				"Conflicting Node engine declarations",
 				detail
@@ -75,6 +77,7 @@ public final class DeclarationDriftRule implements DiagnosticRule {
 		String detail = formatRuntimeDeclaration(javaRequirements.getFirst()) + System.lineSeparator()
 				+ String.join(System.lineSeparator(), mismatches);
 		return java.util.Optional.of(new DiagnosticIssue(
+				DiagnosticRuleId.DECLARATION_DRIFT,
 				DiagnosticSeverity.WARNING,
 				"Conflicting Java versions",
 				detail
@@ -104,6 +107,7 @@ public final class DeclarationDriftRule implements DiagnosticRule {
 			return java.util.Optional.empty();
 		}
 		return java.util.Optional.of(new DiagnosticIssue(
+				DiagnosticRuleId.DECLARATION_DRIFT,
 				DiagnosticSeverity.WARNING,
 				"Conflicting Node versions between repo and CI",
 				String.join(System.lineSeparator() + System.lineSeparator(), mismatches)
@@ -151,6 +155,7 @@ public final class DeclarationDriftRule implements DiagnosticRule {
 					.map(DeclarationDriftRule::formatRuntimeDeclaration)
 					.collect(Collectors.joining(System.lineSeparator() + System.lineSeparator()));
 			issues.add(new DiagnosticIssue(
+					DiagnosticRuleId.DECLARATION_DRIFT,
 					DiagnosticSeverity.WARNING,
 					"Configured " + label + " requirement conflicts with repository declaration",
 					detail

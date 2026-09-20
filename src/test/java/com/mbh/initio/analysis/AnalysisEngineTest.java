@@ -74,4 +74,26 @@ class AnalysisEngineTest {
 				() -> engine.run(FixtureRepositories.invalidInitioConfig())
 		);
 	}
+
+	@Test
+	void suppressionsHideMatchingIssuesFromVisibleResultsAndReadiness() {
+		AnalysisResult result = AnalysisEngines.createDefault().run(FixtureRepositories.configSuppression());
+
+		assertTrue(result.allIssues().stream().anyMatch(issue ->
+				issue.ruleId() == com.mbh.initio.diagnostic.DiagnosticRuleId.MISSING_ENVIRONMENT_VARIABLE
+						&& "LEGACY_API_KEY".equals(issue.environmentName())
+		));
+		assertTrue(result.allIssues().stream().anyMatch(issue ->
+				issue.ruleId() == com.mbh.initio.diagnostic.DiagnosticRuleId.DECLARATION_DRIFT
+		));
+		assertTrue(result.issues().stream().anyMatch(issue ->
+				issue.environmentName() != null && issue.environmentName().equals("JWT_SECRET")
+		));
+		assertTrue(result.issues().stream().noneMatch(issue ->
+				"LEGACY_API_KEY".equals(issue.environmentName())
+		));
+		assertTrue(result.issues().stream().noneMatch(issue ->
+				issue.ruleId() == com.mbh.initio.diagnostic.DiagnosticRuleId.DECLARATION_DRIFT
+		));
+	}
 }

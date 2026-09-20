@@ -13,7 +13,8 @@ public record AnalysisResult(
 		LocalEnvironmentAnalysis local,
 		List<DiagnosticIssue> issues,
 		ReadinessScore readiness,
-		EffectiveProjectAnalysis effective
+		EffectiveProjectAnalysis effective,
+		List<DiagnosticIssue> allIssues
 ) {
 	public AnalysisResult {
 		Objects.requireNonNull(project, "project");
@@ -21,5 +22,6 @@ public record AnalysisResult(
 		issues = List.copyOf(Objects.requireNonNull(issues, "issues"));
 		Objects.requireNonNull(readiness, "readiness");
 		Objects.requireNonNull(effective, "effective");
+		allIssues = List.copyOf(Objects.requireNonNull(allIssues, "allIssues"));
 	}
 }

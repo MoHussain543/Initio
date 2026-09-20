@@ -21,7 +21,7 @@ class InitioConfigValidatorTest {
 	void normalizesIgnoreExpressionsIntoTypedSuppressions() {
 		Object yaml = load("""
 				ignore:
-				  - " env: LEGACY_API_KEY "
+				  - " env: legacy_api_key "
 				  - "port: 3001"
 				  - "rule:DECLARATION_DRIFT"
 				""");

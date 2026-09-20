@@ -2,6 +2,7 @@ package com.mbh.initio.diagnostic.rules;
 
 import com.mbh.initio.analysis.AnalysisContext;
 import com.mbh.initio.diagnostic.DiagnosticRule;
+import com.mbh.initio.diagnostic.DiagnosticRuleId;
 import com.mbh.initio.diagnostic.RuntimeRequirementEvaluator;
 import com.mbh.initio.diagnostic.RuntimeRequirementEvaluator.Outcome;
 import com.mbh.initio.model.DiagnosticIssue;
@@ -26,6 +27,7 @@ public final class MissingRuntimeRule implements DiagnosticRule {
 			}
 			String runtimeLabel = capitalize(requirement.runtime());
 			issues.add(new DiagnosticIssue(
+					DiagnosticRuleId.MISSING_RUNTIME,
 					DiagnosticSeverity.ERROR,
 					runtimeLabel + " is not installed",
 					"Install " + runtimeLabel + " to satisfy " + requirement.source().file()

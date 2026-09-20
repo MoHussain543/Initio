@@ -2,6 +2,7 @@ package com.mbh.initio.diagnostic.rules;
 
 import com.mbh.initio.analysis.AnalysisContext;
 import com.mbh.initio.diagnostic.DiagnosticRule;
+import com.mbh.initio.diagnostic.DiagnosticRuleId;
 import com.mbh.initio.diagnostic.PortExpectationEvaluator;
 import com.mbh.initio.diagnostic.PortExpectationEvaluator.Outcome;
 import com.mbh.initio.model.DiagnosticIssue;
@@ -40,7 +41,13 @@ public final class PortConflictRule implements DiagnosticRule {
 					? "Free port " + expectation.port() + " for the application (currently used by " + occupant + ")"
 					: "Port " + expectation.port() + " is in use by " + occupant
 							+ " but expected service " + expectation.label() + " is not running";
-			issues.add(new DiagnosticIssue(severity, title, detail));
+			issues.add(DiagnosticIssue.forPort(
+					DiagnosticRuleId.PORT_CONFLICT,
+					severity,
+					title,
+					detail,
+					expectation.port()
+			));
 		}
 		return issues;
 	}

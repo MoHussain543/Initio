@@ -1,0 +1,4 @@
+ignore:
+  - "env:legacy_api_key"
+  - "port:3001"
+  - "rule:DECLARATION_DRIFT"

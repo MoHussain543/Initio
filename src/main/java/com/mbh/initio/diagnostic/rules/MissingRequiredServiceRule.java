@@ -2,6 +2,7 @@ package com.mbh.initio.diagnostic.rules;
 
 import com.mbh.initio.analysis.AnalysisContext;
 import com.mbh.initio.diagnostic.DiagnosticRule;
+import com.mbh.initio.diagnostic.DiagnosticRuleId;
 import com.mbh.initio.diagnostic.ServiceRequirementEvaluator;
 import com.mbh.initio.diagnostic.ServiceRequirementEvaluator.Outcome;
 import com.mbh.initio.model.DiagnosticIssue;
@@ -40,6 +41,7 @@ public final class MissingRequiredServiceRule implements DiagnosticRule {
 			String detail = "Run docker compose up -d " + requirement.serviceName()
 					+ " (from " + requirement.composeFile() + ")";
 			issues.add(new DiagnosticIssue(
+					DiagnosticRuleId.MISSING_REQUIRED_SERVICE,
 					DiagnosticSeverity.ERROR,
 					requirement.serviceName() + " is not running",
 					detail

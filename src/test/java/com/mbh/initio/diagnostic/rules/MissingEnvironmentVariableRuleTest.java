@@ -46,6 +46,8 @@ class MissingEnvironmentVariableRuleTest {
 		var issues = new MissingEnvironmentVariableRule().evaluate(context);
 
 		assertEquals(1, issues.size());
+		assertEquals(com.mbh.initio.diagnostic.DiagnosticRuleId.MISSING_ENVIRONMENT_VARIABLE, issues.getFirst().ruleId());
+		assertEquals("JWT_SECRET", issues.getFirst().environmentName());
 		assertTrue(issues.getFirst().title().contains("JWT_SECRET is missing"));
 	}
 }

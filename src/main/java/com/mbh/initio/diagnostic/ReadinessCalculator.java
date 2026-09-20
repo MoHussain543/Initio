@@ -9,6 +9,7 @@ import com.mbh.initio.model.PortRole;
 import com.mbh.initio.model.RuntimeRequirement;
 import com.mbh.initio.model.ServiceRequirement;
 import com.mbh.initio.model.ServiceStatus;
+import com.mbh.initio.projectconfig.DiagnosticSuppression;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,6 +17,14 @@ import java.util.Optional;
 public final class ReadinessCalculator {
 
 	public ReadinessScore calculate(AnalysisContext context, List<DiagnosticIssue> issues) {
+		return calculate(context, issues, List.of());
+	}
+
+	public ReadinessScore calculate(
+			AnalysisContext context,
+			List<DiagnosticIssue> issues,
+			List<DiagnosticSuppression> suppressions
+	) {
 		int verifiedPassed = 0;
 		int verifiedTotal = 0;
 		int unverifiedCount = 0;
@@ -39,6 +48,9 @@ public final class ReadinessCalculator {
 		}
 
 		for (EnvironmentVariableRequirement requirement : context.project().environmentVariableRequirements()) {
+			if (DiagnosticSuppressionFilter.environmentSuppressed(requirement.name(), suppressions)) {
+				continue;
+			}
 			EnvironmentRequirementEvaluator.Outcome outcome = EnvironmentRequirementEvaluator.outcome(
 					context.local().environmentVariableStatus(requirement.name())
 			);
@@ -68,6 +80,9 @@ public final class ReadinessCalculator {
 
 		for (PortExpectation expectation : context.project().portExpectations()) {
 			if (expectation.role() != PortRole.APPLICATION) {
+				continue;
+			}
+			if (DiagnosticSuppressionFilter.portSuppressed(expectation.port(), suppressions)) {
 				continue;
 			}
 			PortExpectationEvaluator.Outcome outcome = PortExpectationEvaluator.outcome(

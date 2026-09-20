@@ -2,6 +2,7 @@ package com.mbh.initio.diagnostic.rules;
 
 import com.mbh.initio.analysis.AnalysisContext;
 import com.mbh.initio.diagnostic.DiagnosticRule;
+import com.mbh.initio.diagnostic.DiagnosticRuleId;
 import com.mbh.initio.diagnostic.RuntimeRequirementEvaluator;
 import com.mbh.initio.diagnostic.RuntimeRequirementEvaluator.Outcome;
 import com.mbh.initio.model.DiagnosticIssue;
@@ -31,6 +32,7 @@ public final class IncompatibleRuntimeVersionRule implements DiagnosticRule {
 			InstalledRuntime installed = context.local().installedRuntime(requirement.runtime()).orElseThrow();
 			String runtimeLabel = capitalize(requirement.runtime());
 			issues.add(new DiagnosticIssue(
+					DiagnosticRuleId.INCOMPATIBLE_RUNTIME,
 					DiagnosticSeverity.ERROR,
 					"Installed " + runtimeLabel + " does not satisfy project requirement",
 					"Required " + requirement.requiredVersion() + " from " + requirement.source().file()

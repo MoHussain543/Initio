@@ -50,6 +50,8 @@ class PortConflictRuleTest {
 		var issues = new PortConflictRule().evaluate(context);
 
 		assertEquals(1, issues.size());
+		assertEquals(com.mbh.initio.diagnostic.DiagnosticRuleId.PORT_CONFLICT, issues.getFirst().ruleId());
+		assertEquals(8080, issues.getFirst().port());
 		assertTrue(issues.getFirst().title().contains("8080"));
 	}
 }

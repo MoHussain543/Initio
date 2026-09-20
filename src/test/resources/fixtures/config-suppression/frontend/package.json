@@ -1,0 +1,7 @@
+{
+  "name": "config-suppression-frontend",
+  "private": true,
+  "engines": {
+    "node": "^22"
+  }
+}

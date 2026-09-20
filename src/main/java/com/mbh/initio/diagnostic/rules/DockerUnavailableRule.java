@@ -2,6 +2,7 @@ package com.mbh.initio.diagnostic.rules;
 
 import com.mbh.initio.analysis.AnalysisContext;
 import com.mbh.initio.diagnostic.DiagnosticRule;
+import com.mbh.initio.diagnostic.DiagnosticRuleId;
 import com.mbh.initio.model.DiagnosticIssue;
 import com.mbh.initio.model.DiagnosticSeverity;
 import com.mbh.initio.model.InstalledRuntime;
@@ -32,6 +33,7 @@ public final class DockerUnavailableRule implements DiagnosticRule {
 		}
 		List<DiagnosticIssue> issues = new ArrayList<>();
 		issues.add(new DiagnosticIssue(
+				DiagnosticRuleId.DOCKER_UNAVAILABLE,
 				DiagnosticSeverity.ERROR,
 				"Docker is not available",
 				"Install Docker Desktop or the Docker Engine, then run docker compose up for this project"

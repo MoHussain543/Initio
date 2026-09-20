@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -228,7 +229,7 @@ public final class InitioConfigValidator {
 			return null;
 		}
 		return switch (prefix) {
-			case "env" -> new DiagnosticSuppression.Environment(value);
+			case "env" -> new DiagnosticSuppression.Environment(value.toUpperCase(Locale.ROOT));
 			case "port" -> {
 				Integer port = parsePort(value, path, issues);
 				yield port == null ? null : new DiagnosticSuppression.Port(port);

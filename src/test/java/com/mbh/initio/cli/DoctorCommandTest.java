@@ -6,6 +6,7 @@ import com.mbh.initio.testsupport.InitioCli.CommandResult;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DoctorCommandTest {
@@ -52,6 +53,16 @@ class DoctorCommandTest {
 		assertEquals(1, output.exitCode());
 		assertTrue(output.stdout().contains("INTERNAL_API_KEY"));
 		assertTrue(output.stdout().contains("initio.yml"));
+		assertFalse(output.stdout().contains("LEGACY_API_KEY"));
+	}
+
+	@Test
+	void doctorOmitsSuppressedEnvAndDeclarationDrift() {
+		CommandResult output = InitioCli.execute("doctor", FixtureRepositories.configSuppression().toString());
+
+		assertTrue(output.stdout().contains("JWT_SECRET"));
+		assertFalse(output.stdout().contains("LEGACY_API_KEY"));
+		assertFalse(output.stdout().contains("Conflicting Node engine declarations"));
 	}
 
 	@Test

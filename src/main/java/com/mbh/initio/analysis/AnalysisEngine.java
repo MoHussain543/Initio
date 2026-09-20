@@ -1,9 +1,12 @@
 package com.mbh.initio.analysis;
 
 import com.mbh.initio.diagnostic.DiagnosticEngine;
+import com.mbh.initio.diagnostic.DiagnosticSuppressionFilter;
 import com.mbh.initio.diagnostic.ReadinessCalculator;
 import com.mbh.initio.model.DiagnosticIssue;
 import com.mbh.initio.model.ReadinessScore;
+import com.mbh.initio.projectconfig.DiagnosticSuppression;
+import com.mbh.initio.projectconfig.InitioProjectConfig;
 import com.mbh.initio.system.LocalEnvironmentInspector;
 
 import java.nio.file.Path;
@@ -53,8 +56,12 @@ public final class AnalysisEngine {
 		var project = effective.project();
 		var local = localEnvironmentInspector.inspect(project);
 		var context = new AnalysisContext(project, local);
-		List<DiagnosticIssue> issues = diagnosticEngine.evaluate(context);
-		ReadinessScore readiness = readinessCalculator.calculate(context, issues);
-		return new AnalysisResult(project, local, issues, readiness, effective);
+		List<DiagnosticIssue> allIssues = diagnosticEngine.evaluate(context);
+		List<DiagnosticSuppression> suppressions = effective.configOptional()
+				.map(InitioProjectConfig::suppressions)
+				.orElse(List.of());
+		List<DiagnosticIssue> issues = DiagnosticSuppressionFilter.visible(allIssues, suppressions);
+		ReadinessScore readiness = readinessCalculator.calculate(context, issues, suppressions);
+		return new AnalysisResult(project, local, issues, readiness, effective, allIssues);
 	}
 }

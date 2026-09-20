@@ -30,6 +30,7 @@ class DeclarationDriftRuleTest {
 
 		assertTrue(issues.stream().anyMatch(issue ->
 				issue.severity() == DiagnosticSeverity.WARNING
+						&& issue.ruleId() == com.mbh.initio.diagnostic.DiagnosticRuleId.DECLARATION_DRIFT
 						&& issue.title().contains("Conflicting Node engine declarations")
 		));
 	}

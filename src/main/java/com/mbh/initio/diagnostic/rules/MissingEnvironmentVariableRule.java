@@ -2,6 +2,7 @@ package com.mbh.initio.diagnostic.rules;
 
 import com.mbh.initio.analysis.AnalysisContext;
 import com.mbh.initio.diagnostic.DiagnosticRule;
+import com.mbh.initio.diagnostic.DiagnosticRuleId;
 import com.mbh.initio.diagnostic.EnvironmentRequirementEvaluator;
 import com.mbh.initio.diagnostic.EnvironmentRequirementEvaluator.Outcome;
 import com.mbh.initio.model.DiagnosticIssue;
@@ -21,18 +22,22 @@ public final class MissingEnvironmentVariableRule implements DiagnosticRule {
 					context.local().environmentVariableStatus(requirement.name())
 			);
 			if (outcome == Outcome.MISSING) {
-				issues.add(new DiagnosticIssue(
+				issues.add(DiagnosticIssue.forEnvironment(
+						DiagnosticRuleId.MISSING_ENVIRONMENT_VARIABLE,
 						DiagnosticSeverity.ERROR,
 						requirement.name() + " is missing",
-						"Add " + requirement.name() + " to .env (expected from " + requirement.source().file() + ")"
+						"Add " + requirement.name() + " to .env (expected from " + requirement.source().file() + ")",
+						requirement.name()
 				));
 				continue;
 			}
 			if (outcome == Outcome.EMPTY) {
-				issues.add(new DiagnosticIssue(
+				issues.add(DiagnosticIssue.forEnvironment(
+						DiagnosticRuleId.MISSING_ENVIRONMENT_VARIABLE,
 						DiagnosticSeverity.ERROR,
 						requirement.name() + " is empty",
-						"Set a value for " + requirement.name() + " in .env or your environment"
+						"Set a value for " + requirement.name() + " in .env or your environment",
+						requirement.name()
 				));
 			}
 		}
