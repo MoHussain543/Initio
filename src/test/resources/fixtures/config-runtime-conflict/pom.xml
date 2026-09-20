@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.example</groupId>
+	<artifactId>config-runtime-conflict</artifactId>
+	<version>1.0.0</version>
+	<name>Config Runtime Conflict</name>
+	<properties>
+		<maven.compiler.release>21</maven.compiler.release>
+	</properties>
+</project>

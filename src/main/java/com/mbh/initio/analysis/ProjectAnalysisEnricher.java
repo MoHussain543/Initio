@@ -1,11 +1,13 @@
 package com.mbh.initio.analysis;
 
+import com.mbh.initio.diagnostic.VersionDriftHelper;
 import com.mbh.initio.model.CommandOrigin;
 import com.mbh.initio.model.DetectionConfidence;
 import com.mbh.initio.model.DetectionSource;
 import com.mbh.initio.model.EnvironmentVariableRequirement;
 import com.mbh.initio.model.ProjectAnalysis;
 import com.mbh.initio.model.ProjectCommand;
+import com.mbh.initio.model.RuntimeRequirement;
 import com.mbh.initio.projectconfig.ConfiguredCommand;
 import com.mbh.initio.projectconfig.InitioConfigException;
 import com.mbh.initio.projectconfig.InitioConfigLoadResult;
@@ -50,15 +52,17 @@ public final class ProjectAnalysisEnricher {
 		Objects.requireNonNull(configFile, "configFile");
 		List<EnvironmentVariableRequirement> environment = mergeEnvironment(detected, config, configFile);
 		List<ProjectCommand> commands = mergeCommands(detected, config, configFile);
+		List<RuntimeRequirement> runtimes = mergeRuntimes(detected, config, configFile);
 		if (environment == detected.environmentVariableRequirements()
-				&& commands == detected.projectCommands()) {
+				&& commands == detected.projectCommands()
+				&& runtimes == detected.runtimeRequirements()) {
 			return detected;
 		}
 		return new ProjectAnalysis(
 				detected.projectPath(),
 				detected.metadata(),
 				detected.technologies(),
-				detected.runtimeRequirements(),
+				runtimes,
 				environment,
 				detected.serviceRequirements(),
 				detected.portExpectations(),
@@ -129,6 +133,53 @@ public final class ProjectAnalysisEnricher {
 			return detected.projectCommands();
 		}
 		return List.copyOf(merged);
+	}
+
+	private static List<RuntimeRequirement> mergeRuntimes(
+			ProjectAnalysis detected,
+			InitioProjectConfig config,
+			Path configFile
+	) {
+		if (config.runtimes().isEmpty()) {
+			return detected.runtimeRequirements();
+		}
+		List<RuntimeRequirement> merged = new ArrayList<>(detected.runtimeRequirements());
+		DetectionSource source = configuredSource(detected.projectPath(), configFile);
+		boolean added = false;
+		for (var entry : config.runtimes().entrySet()) {
+			String runtime = entry.getKey().toLowerCase();
+			String version = entry.getValue();
+			if (hasMatchingMajor(detected.runtimeRequirements(), runtime, version)) {
+				continue;
+			}
+			merged.add(RuntimeRequirement.declared(runtime, version, source));
+			added = true;
+		}
+		if (!added) {
+			return detected.runtimeRequirements();
+		}
+		return List.copyOf(merged);
+	}
+
+	private static boolean hasMatchingMajor(List<RuntimeRequirement> requirements, String runtime, String version) {
+		for (RuntimeRequirement requirement : requirements) {
+			if (!requirement.runtime().equalsIgnoreCase(runtime)) {
+				continue;
+			}
+			if (requirement.requiredVersion() == null || requirement.requiredVersion().isBlank()) {
+				continue;
+			}
+			if (VersionDriftHelper.referenceMajor(requirement.requiredVersion()).isEmpty()) {
+				continue;
+			}
+			if (VersionDriftHelper.referenceMajor(version).isEmpty()) {
+				continue;
+			}
+			if (VersionDriftHelper.sameMajor(requirement.requiredVersion(), version)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private static DetectionSource configuredSource(Path projectPath, Path configFile) {

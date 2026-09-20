@@ -22,6 +22,7 @@ public final class DeclarationDriftRule implements DiagnosticRule {
 		nodeDeclarationDrift(context).ifPresent(issues::add);
 		javaCiDrift(context).ifPresent(issues::add);
 		nodeCiDrift(context).ifPresent(issues::add);
+		issues.addAll(configuredRuntimeConflicts(context));
 		return List.copyOf(issues);
 	}
 
@@ -29,6 +30,7 @@ public final class DeclarationDriftRule implements DiagnosticRule {
 		List<RuntimeRequirement> nodeRequirements = context.project().runtimeRequirements().stream()
 				.filter(requirement -> "node".equalsIgnoreCase(requirement.runtime()))
 				.filter(requirement -> requirement.requiredVersion() != null && !requirement.requiredVersion().isBlank())
+				.filter(requirement -> !isConfigured(requirement))
 				.toList();
 		if (nodeRequirements.size() < 2) {
 			return java.util.Optional.empty();
@@ -106,6 +108,62 @@ public final class DeclarationDriftRule implements DiagnosticRule {
 				"Conflicting Node versions between repo and CI",
 				String.join(System.lineSeparator() + System.lineSeparator(), mismatches)
 		));
+	}
+
+	private static List<DiagnosticIssue> configuredRuntimeConflicts(AnalysisContext context) {
+		List<RuntimeRequirement> requirements = context.project().runtimeRequirements().stream()
+				.filter(requirement -> requirement.requiredVersion() != null && !requirement.requiredVersion().isBlank())
+				.toList();
+		Set<String> runtimes = new LinkedHashSet<>();
+		for (RuntimeRequirement requirement : requirements) {
+			runtimes.add(requirement.runtime().toLowerCase());
+		}
+		List<DiagnosticIssue> issues = new ArrayList<>();
+		for (String runtime : runtimes) {
+			List<RuntimeRequirement> detected = requirements.stream()
+					.filter(requirement -> requirement.runtime().equalsIgnoreCase(runtime))
+					.filter(requirement -> !isConfigured(requirement))
+					.toList();
+			List<RuntimeRequirement> configured = requirements.stream()
+					.filter(requirement -> requirement.runtime().equalsIgnoreCase(runtime))
+					.filter(DeclarationDriftRule::isConfigured)
+					.toList();
+			if (detected.isEmpty() || configured.isEmpty()) {
+				continue;
+			}
+			boolean conflict = false;
+			for (RuntimeRequirement left : detected) {
+				for (RuntimeRequirement right : configured) {
+					if (VersionDriftHelper.referenceMajor(left.requiredVersion()).isEmpty()
+							|| VersionDriftHelper.referenceMajor(right.requiredVersion()).isEmpty()) {
+						continue;
+					}
+					if (!VersionDriftHelper.sameMajor(left.requiredVersion(), right.requiredVersion())) {
+						conflict = true;
+					}
+				}
+			}
+			if (!conflict) {
+				continue;
+			}
+			String label = capitalize(runtime);
+			String detail = java.util.stream.Stream.concat(detected.stream(), configured.stream())
+					.map(DeclarationDriftRule::formatRuntimeDeclaration)
+					.collect(Collectors.joining(System.lineSeparator() + System.lineSeparator()));
+			issues.add(new DiagnosticIssue(
+					DiagnosticSeverity.WARNING,
+					"Configured " + label + " requirement conflicts with repository declaration",
+					detail
+			));
+		}
+		return issues;
+	}
+
+	private static boolean isConfigured(RuntimeRequirement requirement) {
+		String file = requirement.source().file().getFileName() == null
+				? requirement.source().file().toString()
+				: requirement.source().file().getFileName().toString();
+		return "initio.yml".equals(file) || "initio.yaml".equals(file);
 	}
 
 	private static String formatRuntimeDeclaration(RuntimeRequirement requirement) {

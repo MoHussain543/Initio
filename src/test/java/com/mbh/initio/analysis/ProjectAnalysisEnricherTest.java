@@ -1,9 +1,14 @@
 package com.mbh.initio.analysis;
 
 import com.mbh.initio.model.ProjectAnalysis;
+import com.mbh.initio.model.RuntimeRequirement;
 import com.mbh.initio.projectconfig.InitioConfigException;
+import com.mbh.initio.projectconfig.InitioProjectConfig;
 import com.mbh.initio.testsupport.FixtureRepositories;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -36,7 +41,7 @@ class ProjectAnalysisEnricherTest {
 		assertTrue(effective.hasConfig());
 		assertSame(detected, effective.detected());
 		assertEquals(detected.technologies(), effective.detected().technologies());
-		assertEquals(detected.runtimeRequirements(), effective.project().runtimeRequirements());
+		assertEquals(detected.runtimeRequirements(), effective.detected().runtimeRequirements());
 		assertEquals("INTERNAL_API_KEY", effective.config().requiredEnvironmentVariables().getFirst());
 	}
 
@@ -72,6 +77,70 @@ class ProjectAnalysisEnricherTest {
 						&& command.origin() == com.mbh.initio.model.CommandOrigin.CONFIGURED
 						&& command.source().file().toString().contains("initio.yml")
 		));
+	}
+
+	@Test
+	void configuredRuntimesAreAddedWhenDetectionHasNone() {
+		ProjectAnalysis detected = analyzer.analyze(FixtureRepositories.withInitioConfig());
+
+		EffectiveProjectAnalysis effective = enricher.enrich(detected);
+
+		assertTrue(detected.runtimeRequirements().isEmpty());
+		assertTrue(effective.project().runtimeRequirements().stream().anyMatch(requirement ->
+				requirement.runtime().equals("java")
+						&& "25".equals(requirement.requiredVersion())
+						&& requirement.source().file().toString().contains("initio.yml")
+		));
+		assertTrue(effective.project().runtimeRequirements().stream().anyMatch(requirement ->
+				requirement.runtime().equals("node")
+						&& ">=22".equals(requirement.requiredVersion())
+						&& requirement.source().file().toString().contains("initio.yml")
+		));
+	}
+
+	@Test
+	void keepsDetectedAndConfiguredJavaRequirementsWhenMajorsDiffer() {
+		ProjectAnalysis detected = analyzer.analyze(FixtureRepositories.configRuntimeConflict());
+
+		EffectiveProjectAnalysis effective = enricher.enrich(detected);
+
+		assertSame(detected, effective.detected());
+		assertEquals(1, detected.runtimeRequirements().size());
+		assertEquals("21", detected.runtimeRequirements().getFirst().requiredVersion());
+		List<RuntimeRequirement> runtimes = effective.project().runtimeRequirements();
+		assertEquals(2, runtimes.size());
+		assertTrue(runtimes.stream().anyMatch(requirement ->
+				requirement.runtime().equals("java")
+						&& "21".equals(requirement.requiredVersion())
+						&& requirement.source().file().toString().contains("pom.xml")
+		));
+		assertTrue(runtimes.stream().anyMatch(requirement ->
+				requirement.runtime().equals("java")
+						&& "25".equals(requirement.requiredVersion())
+						&& requirement.source().file().toString().contains("initio.yml")
+		));
+	}
+
+	@Test
+	void doesNotDuplicateRuntimeWhenConfiguredMajorMatchesDetected() {
+		ProjectAnalysis detected = analyzer.analyze(FixtureRepositories.mavenPlain());
+		InitioProjectConfig config = new InitioProjectConfig(
+				List.of(),
+				Map.of("java", "21"),
+				List.of(),
+				List.of(),
+				List.of()
+		);
+
+		ProjectAnalysis project = ProjectAnalysisEnricher.apply(
+				detected,
+				config,
+				detected.projectPath().resolve("initio.yml")
+		);
+
+		assertEquals(1, project.runtimeRequirements().size());
+		assertEquals("21", project.runtimeRequirements().getFirst().requiredVersion());
+		assertTrue(project.runtimeRequirements().getFirst().source().file().toString().contains("pom.xml"));
 	}
 
 	@Test

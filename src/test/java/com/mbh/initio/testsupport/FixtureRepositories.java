@@ -69,6 +69,10 @@ public final class FixtureRepositories {
 		return resolve("invalid-initio-config");
 	}
 
+	public static Path configRuntimeConflict() {
+		return resolve("config-runtime-conflict");
+	}
+
 	private static Path resolve(String name) {
 		URL resource = FixtureRepositories.class.getResource("/fixtures/" + name);
 		if (resource == null) {

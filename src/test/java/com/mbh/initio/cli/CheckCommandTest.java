@@ -97,5 +97,18 @@ class CheckCommandTest {
 		assertTrue(output.stdout().contains("DATABASE_URL"));
 		assertTrue(output.stdout().contains("INTERNAL_API_KEY"));
 		assertTrue(output.stdout().contains("initio.yml"));
+		assertTrue(output.stdout().contains("Java 25"));
+		assertTrue(output.stdout().contains("Node >=22"));
+	}
+
+	@Test
+	void checkListsBothDetectedAndConfiguredJavaRequirements() {
+		CommandResult output = InitioCli.execute("check", FixtureRepositories.configRuntimeConflict().toString());
+
+		assertEquals(0, output.exitCode());
+		assertTrue(output.stdout().contains("Java 21"));
+		assertTrue(output.stdout().contains("Java 25"));
+		assertTrue(output.stdout().contains("pom.xml"));
+		assertTrue(output.stdout().contains("initio.yml"));
 	}
 }

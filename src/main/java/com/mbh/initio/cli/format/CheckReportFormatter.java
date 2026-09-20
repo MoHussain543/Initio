@@ -40,7 +40,7 @@ public final class CheckReportFormatter {
 
 		ReportLayout.section(out, "Declared requirements");
 		for (RuntimeRequirement requirement : project.runtimeRequirements()) {
-			out.println(formatDeclaredRequirement(requirement));
+			out.println(formatDeclaredRequirement(requirement) + " · " + requirement.source().file());
 		}
 		ReportLayout.blank(out);
 
@@ -100,12 +100,14 @@ public final class CheckReportFormatter {
 		Outcome outcome = RuntimeRequirementEvaluator.outcome(requirement, installed);
 		String label = formatDeclaredRequirement(requirement);
 		return switch (outcome) {
-			case UNVERIFIED -> label + " — Could not verify";
-			case MISSING -> "✗ " + label + " — not installed";
-			case INCOMPATIBLE -> "✗ " + label + " — incompatible (installed "
-					+ installed.map(InstalledRuntime::detectedVersion).orElse("unknown") + ")";
 			case SATISFIED -> "✓ " + label + " — installed ("
-					+ installed.map(InstalledRuntime::detectedVersion).orElse("unknown") + ")";
+					+ installed.map(InstalledRuntime::detectedVersion).orElse("unknown") + ") · "
+					+ requirement.source().file();
+			case UNVERIFIED -> label + " — Could not verify · " + requirement.source().file();
+			case MISSING -> "✗ " + label + " — not installed · " + requirement.source().file();
+			case INCOMPATIBLE -> "✗ " + label + " — incompatible (installed "
+					+ installed.map(InstalledRuntime::detectedVersion).orElse("unknown") + ") · "
+					+ requirement.source().file();
 		};
 	}
 

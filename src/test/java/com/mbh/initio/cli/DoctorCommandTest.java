@@ -53,4 +53,14 @@ class DoctorCommandTest {
 		assertTrue(output.stdout().contains("INTERNAL_API_KEY"));
 		assertTrue(output.stdout().contains("initio.yml"));
 	}
+
+	@Test
+	void doctorWarnsWhenConfiguredJavaConflictsWithPom() {
+		CommandResult output = InitioCli.execute("doctor", FixtureRepositories.configRuntimeConflict().toString());
+
+		assertTrue(output.stdout().contains("[WARN]"));
+		assertTrue(output.stdout().contains("Configured Java requirement conflicts with repository declaration"));
+		assertTrue(output.stdout().contains("21"));
+		assertTrue(output.stdout().contains("25"));
+	}
 }
