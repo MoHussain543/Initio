@@ -35,6 +35,7 @@ class DefaultDockerInspectorTest {
 						new ServiceRequirement("redis", Path.of("docker-compose.yml"), "redis:7", List.of(6379), source)
 				),
 				List.of(),
+				List.of(),
 				List.of()
 		);
 		CommandExecutor commandExecutor = new CommandExecutor() {

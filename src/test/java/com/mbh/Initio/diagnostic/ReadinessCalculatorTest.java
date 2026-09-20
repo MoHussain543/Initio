@@ -32,6 +32,7 @@ class ReadinessCalculatorTest {
 				List.of(),
 				List.of(),
 				List.of(),
+				List.of(),
 				List.of()
 		);
 		LocalEnvironmentAnalysis local = new LocalEnvironmentAnalysis(

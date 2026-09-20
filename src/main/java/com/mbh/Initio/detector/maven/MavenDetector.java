@@ -69,7 +69,7 @@ public final class MavenDetector implements ProjectDetector {
 		}
 
 		List<ProjectCommand> projectCommands = MavenConventionalCommands.conventionalCommands(context, isSpringBoot(pom));
-		return new DetectionResult(metadata(pom), technologies, requirements, List.of(), List.of(), List.of(), projectCommands);
+		return new DetectionResult(metadata(pom), technologies, requirements, List.of(), List.of(), List.of(), projectCommands, List.of());
 	}
 
 	private static boolean isSpringBoot(MavenPom pom) {

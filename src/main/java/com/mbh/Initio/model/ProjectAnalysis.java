@@ -12,7 +12,8 @@ public record ProjectAnalysis(
 		List<EnvironmentVariableRequirement> environmentVariableRequirements,
 		List<ServiceRequirement> serviceRequirements,
 		List<PortExpectation> portExpectations,
-		List<ProjectCommand> projectCommands
+		List<ProjectCommand> projectCommands,
+		List<CiExpectation> ciExpectations
 ) {
 	public ProjectAnalysis {
 		Objects.requireNonNull(projectPath, "projectPath");
@@ -25,6 +26,7 @@ public record ProjectAnalysis(
 		serviceRequirements = List.copyOf(Objects.requireNonNull(serviceRequirements, "serviceRequirements"));
 		portExpectations = List.copyOf(Objects.requireNonNull(portExpectations, "portExpectations"));
 		projectCommands = List.copyOf(Objects.requireNonNull(projectCommands, "projectCommands"));
+		ciExpectations = List.copyOf(Objects.requireNonNull(ciExpectations, "ciExpectations"));
 	}
 
 	public List<DetectedTechnology> technologies(TechnologyCategory category) {

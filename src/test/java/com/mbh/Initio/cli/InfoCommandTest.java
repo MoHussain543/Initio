@@ -26,6 +26,7 @@ class InfoCommandTest {
 		assertTrue(output.stdout().contains("Maven"));
 		assertTrue(output.stdout().contains("Tools"));
 		assertTrue(output.stdout().contains("Maven Wrapper"));
+		assertTrue(output.stdout().contains("GitHub Actions"));
 		assertFalse(output.stdout().contains("Package managers"));
 	}
 

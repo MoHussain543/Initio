@@ -86,7 +86,8 @@ public final class NodeDetector implements ProjectDetector {
 				List.of(),
 				List.of(),
 				List.of(),
-				projectCommands
+				projectCommands,
+				List.of()
 		);
 	}
 

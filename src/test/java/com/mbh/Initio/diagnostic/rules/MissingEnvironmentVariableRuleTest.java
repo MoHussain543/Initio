@@ -30,6 +30,7 @@ class MissingEnvironmentVariableRuleTest {
 				List.of(new EnvironmentVariableRequirement("JWT_SECRET", source)),
 				List.of(),
 				List.of(),
+				List.of(),
 				List.of()
 		);
 		AnalysisContext context = new AnalysisContext(

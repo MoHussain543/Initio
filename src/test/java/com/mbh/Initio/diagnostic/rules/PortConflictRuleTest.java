@@ -34,6 +34,7 @@ class PortConflictRuleTest {
 				List.of(),
 				List.of(),
 				List.of(new PortExpectation(8080, PortRole.APPLICATION, "Spring Boot application", source)),
+				List.of(),
 				List.of()
 		);
 		AnalysisContext context = new AnalysisContext(

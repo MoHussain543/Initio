@@ -32,6 +32,7 @@ class MissingRuntimeRuleTest {
 				List.of(),
 				List.of(),
 				List.of(),
+				List.of(),
 				List.of()
 		);
 		AnalysisContext context = new AnalysisContext(

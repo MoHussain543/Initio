@@ -28,6 +28,6 @@ public final class DockerDetector implements ProjectDetector {
 				DetectionConfidence.HIGH
 		);
 		DetectedTechnology docker = new DetectedTechnology("Docker", TechnologyCategory.TOOL, source);
-		return new DetectionResult(null, List.of(docker), List.of(), List.of(), List.of(), List.of(), List.of());
+		return new DetectionResult(null, List.of(docker), List.of(), List.of(), List.of(), List.of(), List.of(), List.of());
 	}
 }
