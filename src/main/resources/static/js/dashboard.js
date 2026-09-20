@@ -83,6 +83,7 @@
     projectPathEl.textContent = project.path || "";
 
     renderReadiness(readiness);
+    renderConfiguration(data.configuration);
     renderStack(project.technologies);
     renderRuntime(data.runtime);
     renderEnvironment(data.environment);
@@ -108,6 +109,40 @@
       '%"></div></div>' +
       (summary ? '<p class="readiness-summary">' + escapeHtml(summary) + "</p>" : "") +
       '<p class="readiness-meta">' + escapeHtml(formatIssueMeta(issueCount)) + "</p>";
+  }
+
+  function renderConfiguration(configuration) {
+    const el = section("config");
+    if (!el) {
+      return;
+    }
+    if (!configuration || !configuration.present) {
+      el.innerHTML = emptyState("No initio.yml. Project configuration is optional.");
+      return;
+    }
+    el.innerHTML =
+      '<p class="config-file mono">' +
+      escapeHtml(configuration.file || "initio.yml") +
+      "</p>" +
+      '<ul class="config-counts">' +
+      configCount("environment.required", configuration.environmentRequired) +
+      configCount("runtimes", configuration.runtimes) +
+      configCount("commands", configuration.commands) +
+      configCount("services", configuration.services) +
+      configCount("ignore", configuration.ignore) +
+      "</ul>" +
+      '<p class="config-note">Configured facts keep initio.yml as their source. There is no in-browser editor.</p>';
+  }
+
+  function configCount(label, value) {
+    const count = typeof value === "number" ? value : 0;
+    return (
+      "<li><strong>" +
+      escapeHtml(String(count)) +
+      "</strong> " +
+      escapeHtml(label) +
+      "</li>"
+    );
   }
 
   function renderStack(technologies) {
@@ -225,7 +260,9 @@
             labelHtml(row) +
             '<span class="status-label">' +
             escapeHtml(formatStatusLabel(status)) +
-            "</span></div></li>"
+            "</span>" +
+            sourceHtml(row.source) +
+            "</div></li>"
           );
         })
         .join("") +
@@ -404,6 +441,13 @@
 
   function section(key) {
     return document.querySelector('[data-section="' + key + '"]');
+  }
+
+  function sourceHtml(source) {
+    if (!source) {
+      return "";
+    }
+    return '<span class="row-source">' + escapeHtml(shortPath(source)) + "</span>";
   }
 
   function emptyState(message) {

@@ -47,7 +47,7 @@ public final class ProjectAnalysisEnricher {
 			throw InitioConfigException.invalid(loaded);
 		}
 		InitioProjectConfig config = loaded.config();
-		return EffectiveProjectAnalysis.withConfig(detected, apply(detected, config, loaded.file()), config);
+		return EffectiveProjectAnalysis.withConfig(detected, apply(detected, config, loaded.file()), config, loaded.file());
 	}
 
 	static ProjectAnalysis apply(ProjectAnalysis detected, InitioProjectConfig config, Path configFile) {

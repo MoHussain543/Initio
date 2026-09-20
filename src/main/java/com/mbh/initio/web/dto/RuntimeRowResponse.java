@@ -5,6 +5,7 @@ public record RuntimeRowResponse(
 		String requiredVersion,
 		String installedVersion,
 		String status,
-		String label
+		String label,
+		String source
 ) {
 }

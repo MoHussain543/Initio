@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -48,6 +49,39 @@ class AnalysisControllerTest {
 				.getContentAsString();
 
 		org.junit.jupiter.api.Assertions.assertFalse(body.contains("\"value\""));
+	}
+
+	@Test
+	void configuredAnalysisIncludesConfigurationAndProvenance() throws Exception {
+		MockMvc mockMvc = mockMvcFor(FixtureRepositories.withInitioConfig());
+
+		String body = mockMvc.perform(get("/api/v1/analysis"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.configuration.present").value(true))
+				.andExpect(jsonPath("$.configuration.file").value("initio.yml"))
+				.andExpect(jsonPath("$.configuration.environmentRequired").value(2))
+				.andExpect(jsonPath("$.configuration.runtimes").value(2))
+				.andExpect(jsonPath("$.configuration.commands").value(1))
+				.andExpect(jsonPath("$.configuration.services").value(1))
+				.andExpect(jsonPath("$.configuration.ignore").value(3))
+				.andExpect(jsonPath("$.environment[?(@.name == 'INTERNAL_API_KEY')].source", hasItem(containsString("initio.yml"))))
+				.andExpect(jsonPath("$.commands[?(@.command == './scripts/integration-test.sh')].origin", hasItem("CONFIGURED")))
+				.andExpect(jsonPath("$.services[?(@.name == 'redis')].source", hasItem(containsString("initio.yml"))))
+				.andReturn()
+				.getResponse()
+				.getContentAsString();
+
+		org.junit.jupiter.api.Assertions.assertFalse(body.contains("\"value\""));
+	}
+
+	@Test
+	void invalidConfigReturnsInvalidInitioConfig() throws Exception {
+		MockMvc mockMvc = mockMvcFor(FixtureRepositories.invalidInitioConfig());
+
+		mockMvc.perform(get("/api/v1/analysis"))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.code").value("INVALID_INITIO_CONFIG"))
+				.andExpect(jsonPath("$.message", containsString("initio.yml")));
 	}
 
 	@Test

@@ -1,6 +1,7 @@
 package com.mbh.initio.web.mapper;
 
 import com.mbh.initio.analysis.AnalysisResult;
+import com.mbh.initio.analysis.EffectiveProjectAnalysis;
 import com.mbh.initio.diagnostic.EnvironmentRequirementEvaluator;
 import com.mbh.initio.diagnostic.PortExpectationEvaluator;
 import com.mbh.initio.diagnostic.RuntimeRequirementEvaluator;
@@ -20,12 +21,14 @@ import com.mbh.initio.model.ProjectCommand;
 import com.mbh.initio.model.RuntimeRequirement;
 import com.mbh.initio.model.ServiceRequirement;
 import com.mbh.initio.model.ServiceStatus;
+import com.mbh.initio.projectconfig.InitioProjectConfig;
 import com.mbh.initio.web.dto.AnalysisResponse;
 import com.mbh.initio.web.dto.CiResponse;
 import com.mbh.initio.web.dto.CommandResponse;
 import com.mbh.initio.web.dto.EnvironmentRowResponse;
 import com.mbh.initio.web.dto.IssueResponse;
 import com.mbh.initio.web.dto.PortRowResponse;
+import com.mbh.initio.web.dto.ProjectConfigurationResponse;
 import com.mbh.initio.web.dto.ProjectResponse;
 import com.mbh.initio.web.dto.ReadinessResponse;
 import com.mbh.initio.web.dto.RuntimeRowResponse;
@@ -52,7 +55,8 @@ public class AnalysisResponseMapper {
 				toPortRows(result),
 				toIssues(result.issues()),
 				toCommands(project),
-				toCi(project)
+				toCi(project),
+				toConfiguration(result.effective())
 		);
 	}
 
@@ -93,7 +97,8 @@ public class AnalysisResponseMapper {
 				requirement.requiredVersion(),
 				installed.map(InstalledRuntime::detectedVersion).orElse(null),
 				outcome.name(),
-				label
+				label,
+				sourceFile(requirement.source().file())
 		);
 	}
 
@@ -113,7 +118,7 @@ public class AnalysisResponseMapper {
 		return new EnvironmentRowResponse(
 				requirement.name(),
 				outcome.name(),
-				requirement.source().file().toString()
+				sourceFile(requirement.source().file())
 		);
 	}
 
@@ -130,7 +135,8 @@ public class AnalysisResponseMapper {
 		return new ServiceRowResponse(
 				requirement.serviceName(),
 				blankToNull(requirement.image()),
-				outcome.name()
+				outcome.name(),
+				sourceFile(requirement.source().file())
 		);
 	}
 
@@ -151,7 +157,8 @@ public class AnalysisResponseMapper {
 				expectation.port(),
 				expectation.label(),
 				outcome.name(),
-				observation.map(PortObservation::occupantHint).orElse(null)
+				observation.map(PortObservation::occupantHint).orElse(null),
+				sourceFile(expectation.source().file())
 		);
 	}
 
@@ -193,14 +200,31 @@ public class AnalysisResponseMapper {
 	}
 
 	private static CommandResponse toCommand(ProjectCommand command) {
-		Path sourceFile = command.source().file();
 		return new CommandResponse(
 				command.name(),
 				command.command(),
 				command.category().name(),
 				command.origin().name(),
-				sourceFile.toString(),
+				sourceFile(command.source().file()),
 				command.source().description()
+		);
+	}
+
+	private static ProjectConfigurationResponse toConfiguration(EffectiveProjectAnalysis effective) {
+		if (!effective.hasConfig()) {
+			return ProjectConfigurationResponse.absent();
+		}
+		InitioProjectConfig config = effective.config();
+		Path file = effective.configFile();
+		String fileName = file.getFileName() == null ? file.toString() : file.getFileName().toString();
+		return new ProjectConfigurationResponse(
+				true,
+				fileName,
+				config.requiredEnvironmentVariables().size(),
+				config.runtimes().size(),
+				config.commands().size(),
+				config.services().size(),
+				config.suppressions().size()
 		);
 	}
 
@@ -254,6 +278,10 @@ public class AnalysisResponseMapper {
 
 	private static String blankToNull(String value) {
 		return value == null || value.isBlank() ? null : value;
+	}
+
+	private static String sourceFile(Path file) {
+		return file == null ? null : file.toString();
 	}
 
 	private static String extractCopyText(String detail) {

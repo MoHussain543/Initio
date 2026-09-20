@@ -65,7 +65,51 @@ class AnalysisResponseMapperTest {
 		AnalysisResult result = AnalysisEngines.createDefault().run(FixtureRepositories.withInitioConfig());
 
 		var response = mapper.toResponse(result);
-		assertTrue(response.services().stream().anyMatch(service -> "redis".equals(service.name())));
-		assertTrue(response.ports().stream().anyMatch(port -> port.port() == 6379));
+		assertTrue(response.services().stream().anyMatch(service ->
+				"redis".equals(service.name()) && service.source().contains("initio.yml")));
+		assertTrue(response.ports().stream().anyMatch(port ->
+				port.port() == 6379 && port.source().contains("initio.yml")));
+	}
+
+	@Test
+	void mapsProjectConfigurationTeaserFromInitioYml() {
+		AnalysisResult result = AnalysisEngines.createDefault().run(FixtureRepositories.withInitioConfig());
+
+		var configuration = mapper.toResponse(result).configuration();
+
+		assertTrue(configuration.present());
+		assertEquals("initio.yml", configuration.file());
+		assertEquals(2, configuration.environmentRequired());
+		assertEquals(2, configuration.runtimes());
+		assertEquals(1, configuration.commands());
+		assertEquals(1, configuration.services());
+		assertEquals(3, configuration.ignore());
+	}
+
+	@Test
+	void absentConfigurationWhenProjectHasNoInitioYml() {
+		AnalysisResult result = AnalysisEngines.createDefault().run(FixtureRepositories.springMaven());
+
+		var configuration = mapper.toResponse(result).configuration();
+
+		assertFalse(configuration.present());
+		assertEquals(null, configuration.file());
+		assertEquals(0, configuration.environmentRequired());
+	}
+
+	@Test
+	void runtimeConflictKeepsDetectedAndConfiguredSources() {
+		AnalysisResult result = AnalysisEngines.createDefault().run(FixtureRepositories.configRuntimeConflict());
+
+		var response = mapper.toResponse(result);
+
+		assertTrue(response.runtime().stream().anyMatch(row ->
+				"java".equals(row.runtime())
+						&& "21".equals(row.requiredVersion())
+						&& row.source().contains("pom.xml")));
+		assertTrue(response.runtime().stream().anyMatch(row ->
+				"java".equals(row.runtime())
+						&& "25".equals(row.requiredVersion())
+						&& row.source().contains("initio.yml")));
 	}
 }

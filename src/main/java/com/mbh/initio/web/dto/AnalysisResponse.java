@@ -11,6 +11,7 @@ public record AnalysisResponse(
 		List<PortRowResponse> ports,
 		List<IssueResponse> issues,
 		List<CommandResponse> commands,
-		List<CiResponse> ci
+		List<CiResponse> ci,
+		ProjectConfigurationResponse configuration
 ) {
 }

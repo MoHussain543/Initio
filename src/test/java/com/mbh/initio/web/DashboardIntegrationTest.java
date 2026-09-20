@@ -39,6 +39,7 @@ class DashboardIntegrationTest {
 		assertEquals(200, index.statusCode());
 		assertTrue(index.body().contains("Initio"));
 		assertTrue(index.body().contains("dashboard-main"));
+		assertTrue(index.body().contains("Project configuration"));
 
 		HttpResponse<String> analysis = client.send(
 				HttpRequest.newBuilder(URI.create(base + "/api/v1/analysis")).GET().build(),
@@ -46,6 +47,8 @@ class DashboardIntegrationTest {
 		);
 		assertEquals(200, analysis.statusCode());
 		assertTrue(analysis.body().contains("\"name\":\"Spring Maven Demo\""));
+		assertTrue(analysis.body().contains("\"configuration\""));
+		assertTrue(analysis.body().contains("\"present\":false"));
 		assertFalse(analysis.body().contains("\"value\""));
 	}
 }
