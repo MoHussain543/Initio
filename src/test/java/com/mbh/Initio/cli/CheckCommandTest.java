@@ -35,6 +35,15 @@ class CheckCommandTest {
 	}
 
 	@Test
+	void checkListsSeparateNodeRequirementsForFullstackFixture() {
+		CommandResult output = InitioCli.execute("check", FixtureRepositories.fullstack().toString());
+
+		assertEquals(0, output.exitCode());
+		assertTrue(output.stdout().contains("Node >=20"));
+		assertTrue(output.stdout().contains("Node ^22"));
+	}
+
+	@Test
 	void checkReportsAMissingPath() {
 		CommandResult output = InitioCli.execute("check", "/this/path/does-not-exist-initio");
 

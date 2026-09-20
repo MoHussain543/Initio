@@ -1,0 +1,7 @@
+{
+  "name": "fullstack-root",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  }
+}

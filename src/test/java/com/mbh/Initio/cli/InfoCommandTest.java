@@ -30,6 +30,18 @@ class InfoCommandTest {
 	}
 
 	@Test
+	void infoIncludesNodeStackForNodeViteFixture() {
+		CommandResult output = InitioCli.execute("info", FixtureRepositories.nodeVite().toString());
+
+		assertEquals(0, output.exitCode());
+		assertTrue(output.stdout().contains("node-vite-demo"));
+		assertTrue(output.stdout().contains("TypeScript"));
+		assertTrue(output.stdout().contains("Vite"));
+		assertTrue(output.stdout().contains("Package managers"));
+		assertTrue(output.stdout().contains("npm"));
+	}
+
+	@Test
 	void infoOmitsEmptySectionsForAPlainMavenProject() {
 		CommandResult output = InitioCli.execute("info", FixtureRepositories.mavenPlain().toString());
 

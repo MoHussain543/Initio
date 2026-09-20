@@ -1,0 +1,11 @@
+{
+  "name": "fullstack-frontend",
+  "private": true,
+  "engines": {
+    "node": "^22"
+  },
+  "dependencies": {
+    "react": "19.0.0",
+    "vite": "6.2.0"
+  }
+}

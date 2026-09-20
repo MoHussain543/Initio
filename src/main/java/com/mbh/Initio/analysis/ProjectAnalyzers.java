@@ -1,6 +1,7 @@
 package com.mbh.initio.analysis;
 
 import com.mbh.initio.detector.maven.MavenDetector;
+import com.mbh.initio.detector.node.NodeDetector;
 
 public final class ProjectAnalyzers {
 
@@ -8,6 +9,6 @@ public final class ProjectAnalyzers {
 	}
 
 	public static ProjectAnalyzer create() {
-		return new ProjectAnalyzer(new MavenDetector());
+		return new ProjectAnalyzer(new MavenDetector(), new NodeDetector());
 	}
 }

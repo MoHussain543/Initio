@@ -47,6 +47,19 @@ class ProjectAnalyzerTest {
 	}
 
 	@Test
+	void combinesMavenAndNodeDetectorsForFullstackFixture() {
+		ProjectAnalysis analysis = ProjectAnalyzers.create().analyze(FixtureRepositories.fullstack());
+
+		assertEquals("Fullstack App", analysis.metadata().name());
+		assertEquals("Java", analysis.technologies(TechnologyCategory.LANGUAGE).getFirst().name());
+		assertTrue(analysis.technologies(TechnologyCategory.FRAMEWORK).stream()
+				.anyMatch(technology -> technology.name().equals("React")));
+		assertEquals(3, analysis.runtimeRequirements().size());
+		assertTrue(analysis.runtimeRequirements().stream().anyMatch(requirement -> "java".equals(requirement.runtime())));
+		assertEquals(2, analysis.runtimeRequirements().stream().filter(requirement -> "node".equals(requirement.runtime())).count());
+	}
+
+	@Test
 	void rejectsAMissingDirectory() {
 		assertThrows(
 				IllegalArgumentException.class,

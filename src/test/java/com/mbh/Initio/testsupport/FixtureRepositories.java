@@ -33,6 +33,14 @@ public final class FixtureRepositories {
 		return resolve("maven-malformed");
 	}
 
+	public static Path nodeVite() {
+		return resolve("node-vite");
+	}
+
+	public static Path fullstack() {
+		return resolve("fullstack");
+	}
+
 	private static Path resolve(String name) {
 		URL resource = FixtureRepositories.class.getResource("/fixtures/" + name);
 		if (resource == null) {
