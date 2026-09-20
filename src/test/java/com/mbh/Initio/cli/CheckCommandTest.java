@@ -16,6 +16,7 @@ class CheckCommandTest {
 
 		assertEquals(0, output.exitCode());
 		assertTrue(output.stdout().contains("check"));
+		assertTrue(output.stdout().contains("doctor"));
 		assertTrue(output.stdout().contains("info"));
 	}
 
@@ -54,6 +55,7 @@ class CheckCommandTest {
 		assertTrue(output.stdout().contains("Environment"));
 		assertTrue(output.stdout().contains("JWT_SECRET"));
 		assertTrue(output.stdout().contains("missing"));
+		assertTrue(output.stdout().contains("initio doctor"));
 	}
 
 	@Test

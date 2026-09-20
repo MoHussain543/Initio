@@ -87,6 +87,12 @@ public final class CheckReportFormatter {
 		ReportLayout.section(out, "Result");
 		out.println("Project readiness: " + result.readiness().percent() + "%");
 		out.println(result.readiness().summary());
+		if (result.issues().isEmpty()) {
+			out.println("No issues detected.");
+		} else {
+			out.println("Issues: " + result.issues().size());
+			out.println("Run initio doctor for numbered fixes and suggested commands.");
+		}
 	}
 
 	private static String formatRuntimeCheck(RuntimeRequirement requirement, AnalysisResult result) {
