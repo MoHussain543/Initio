@@ -7,4 +7,6 @@ public interface RuntimeInspector {
 	InstalledRuntime inspectJava();
 
 	InstalledRuntime inspectNode();
+
+	InstalledRuntime inspectDocker();
 }

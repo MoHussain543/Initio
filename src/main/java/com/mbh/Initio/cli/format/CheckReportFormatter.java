@@ -9,6 +9,8 @@ import com.mbh.initio.model.EnvironmentVariableRequirement;
 import com.mbh.initio.model.InstalledRuntime;
 import com.mbh.initio.model.ProjectAnalysis;
 import com.mbh.initio.model.RuntimeRequirement;
+import com.mbh.initio.model.ServiceRequirement;
+import com.mbh.initio.diagnostic.ServiceRequirementEvaluator;
 
 import java.io.PrintWriter;
 import java.util.Comparator;
@@ -47,6 +49,16 @@ public final class CheckReportFormatter {
 		}
 		ReportLayout.blank(out);
 
+		ReportLayout.section(out, "Services");
+		if (project.serviceRequirements().isEmpty()) {
+			out.println("No compose services declared");
+		} else {
+			for (ServiceRequirement requirement : project.serviceRequirements()) {
+				out.println(formatServiceCheck(requirement, result));
+			}
+		}
+		ReportLayout.blank(out);
+
 		ReportLayout.section(out, "Environment");
 		if (project.environmentVariableRequirements().isEmpty()) {
 			out.println("No environment variables declared");
@@ -73,6 +85,21 @@ public final class CheckReportFormatter {
 					+ installed.map(InstalledRuntime::detectedVersion).orElse("unknown") + ")";
 			case SATISFIED -> "✓ " + label + " — installed ("
 					+ installed.map(InstalledRuntime::detectedVersion).orElse("unknown") + ")";
+		};
+	}
+
+	private static String formatServiceCheck(ServiceRequirement requirement, AnalysisResult result) {
+		ServiceRequirementEvaluator.Outcome outcome = ServiceRequirementEvaluator.outcome(
+				result.local().serviceStatus(requirement.serviceName())
+		);
+		String label = requirement.serviceName();
+		if (requirement.image() != null && !requirement.image().isBlank()) {
+			label = label + " (" + requirement.image() + ")";
+		}
+		return switch (outcome) {
+			case UNVERIFIED -> label + " — Could not verify";
+			case STOPPED -> "✗ " + label + " — not running";
+			case RUNNING -> "✓ " + label + " — running";
 		};
 	}
 

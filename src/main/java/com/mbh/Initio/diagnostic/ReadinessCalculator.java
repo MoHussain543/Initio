@@ -5,6 +5,7 @@ import com.mbh.initio.model.DiagnosticIssue;
 import com.mbh.initio.model.EnvironmentVariableRequirement;
 import com.mbh.initio.model.ReadinessScore;
 import com.mbh.initio.model.RuntimeRequirement;
+import com.mbh.initio.model.ServiceRequirement;
 
 import java.util.List;
 
@@ -43,6 +44,20 @@ public final class ReadinessCalculator {
 			}
 			verifiedTotal++;
 			if (outcome == EnvironmentRequirementEvaluator.Outcome.SATISFIED) {
+				verifiedPassed++;
+			}
+		}
+
+		for (ServiceRequirement requirement : context.project().serviceRequirements()) {
+			ServiceRequirementEvaluator.Outcome outcome = ServiceRequirementEvaluator.outcome(
+					context.local().serviceStatus(requirement.serviceName())
+			);
+			if (outcome == ServiceRequirementEvaluator.Outcome.UNVERIFIED) {
+				unverifiedCount++;
+				continue;
+			}
+			verifiedTotal++;
+			if (outcome == ServiceRequirementEvaluator.Outcome.RUNNING) {
 				verifiedPassed++;
 			}
 		}

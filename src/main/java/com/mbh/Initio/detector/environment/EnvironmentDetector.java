@@ -42,6 +42,6 @@ public final class EnvironmentDetector implements ProjectDetector {
 		for (String key : parser.parseKeys(envExample)) {
 			requirements.add(new EnvironmentVariableRequirement(key, source));
 		}
-		return new DetectionResult(null, List.of(), List.of(), requirements);
+		return new DetectionResult(null, List.of(), List.of(), requirements, List.of(), List.of());
 	}
 }

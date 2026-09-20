@@ -55,6 +55,17 @@ class CheckCommandTest {
 	}
 
 	@Test
+	void checkListsComposeServicesForDockerizedFixture() {
+		CommandResult output = InitioCli.execute("check", FixtureRepositories.dockerized().toString());
+
+		assertEquals(0, output.exitCode());
+		assertTrue(output.stdout().contains("Services"));
+		assertTrue(output.stdout().contains("postgres"));
+		assertTrue(output.stdout().contains("redis"));
+		assertTrue(output.stdout().contains("Docker Compose"));
+	}
+
+	@Test
 	void checkReportsAMissingPath() {
 		CommandResult output = InitioCli.execute("check", "/this/path/does-not-exist-initio");
 

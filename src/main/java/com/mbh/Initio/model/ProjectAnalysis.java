@@ -9,7 +9,9 @@ public record ProjectAnalysis(
 		ProjectMetadata metadata,
 		List<DetectedTechnology> technologies,
 		List<RuntimeRequirement> runtimeRequirements,
-		List<EnvironmentVariableRequirement> environmentVariableRequirements
+		List<EnvironmentVariableRequirement> environmentVariableRequirements,
+		List<ServiceRequirement> serviceRequirements,
+		List<PortExpectation> portExpectations
 ) {
 	public ProjectAnalysis {
 		Objects.requireNonNull(projectPath, "projectPath");
@@ -19,6 +21,8 @@ public record ProjectAnalysis(
 		environmentVariableRequirements = List.copyOf(
 				Objects.requireNonNull(environmentVariableRequirements, "environmentVariableRequirements")
 		);
+		serviceRequirements = List.copyOf(Objects.requireNonNull(serviceRequirements, "serviceRequirements"));
+		portExpectations = List.copyOf(Objects.requireNonNull(portExpectations, "portExpectations"));
 	}
 
 	public List<DetectedTechnology> technologies(TechnologyCategory category) {

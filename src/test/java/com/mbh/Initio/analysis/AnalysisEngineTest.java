@@ -7,6 +7,7 @@ import com.mbh.initio.diagnostic.rules.MissingEnvironmentVariableRule;
 import com.mbh.initio.diagnostic.rules.MissingRuntimeRule;
 import com.mbh.initio.model.InstalledRuntime;
 import com.mbh.initio.model.LocalEnvironmentAnalysis;
+import com.mbh.initio.system.DockerInspector;
 import com.mbh.initio.system.LocalEnvironmentInspector;
 import com.mbh.initio.system.RuntimeInspector;
 import com.mbh.initio.testsupport.FixtureRepositories;
@@ -31,10 +32,16 @@ class AnalysisEngineTest {
 			public InstalledRuntime inspectNode() {
 				return InstalledRuntime.available("node", "22.14.0");
 			}
+
+			@Override
+			public InstalledRuntime inspectDocker() {
+				return InstalledRuntime.available("docker", "27.0.0");
+			}
 		};
+		DockerInspector dockerInspector = project -> List.of();
 		AnalysisEngine engine = new AnalysisEngine(
 				ProjectAnalyzers.create(),
-				new LocalEnvironmentInspector(runtimeInspector),
+				new LocalEnvironmentInspector(runtimeInspector, dockerInspector),
 				new DiagnosticEngine(List.of(
 						new MissingRuntimeRule(),
 						new IncompatibleRuntimeVersionRule(),

@@ -76,7 +76,7 @@ public final class NodeDetector implements ProjectDetector {
 			}
 		}
 
-		return new DetectionResult(metadata, List.copyOf(technologies.values()), runtimeRequirements, List.of());
+		return new DetectionResult(metadata, List.copyOf(technologies.values()), runtimeRequirements, List.of(), List.of(), List.of());
 	}
 
 	private static DetectedTechnology language(

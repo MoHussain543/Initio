@@ -3,9 +3,11 @@ package com.mbh.initio.analysis;
 import com.mbh.initio.detector.ProjectDetector;
 import com.mbh.initio.model.DetectedTechnology;
 import com.mbh.initio.model.EnvironmentVariableRequirement;
+import com.mbh.initio.model.PortExpectation;
 import com.mbh.initio.model.ProjectAnalysis;
 import com.mbh.initio.model.ProjectMetadata;
 import com.mbh.initio.model.RuntimeRequirement;
+import com.mbh.initio.model.ServiceRequirement;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -37,6 +39,8 @@ public final class ProjectAnalyzer {
 		List<DetectedTechnology> technologies = new ArrayList<>();
 		List<RuntimeRequirement> runtimeRequirements = new ArrayList<>();
 		List<EnvironmentVariableRequirement> environmentVariableRequirements = new ArrayList<>();
+		List<ServiceRequirement> serviceRequirements = new ArrayList<>();
+		List<PortExpectation> portExpectations = new ArrayList<>();
 
 		for (ProjectDetector detector : detectors) {
 			if (!detector.supports(context)) {
@@ -47,6 +51,8 @@ public final class ProjectAnalyzer {
 			technologies.addAll(result.technologies());
 			runtimeRequirements.addAll(result.runtimeRequirements());
 			environmentVariableRequirements.addAll(result.environmentVariableRequirements());
+			serviceRequirements.addAll(result.serviceRequirements());
+			portExpectations.addAll(result.portExpectations());
 		}
 
 		return new ProjectAnalysis(
@@ -54,7 +60,9 @@ public final class ProjectAnalyzer {
 				fallbackMetadata(metadata, root),
 				technologies,
 				runtimeRequirements,
-				environmentVariableRequirements
+				environmentVariableRequirements,
+				serviceRequirements,
+				portExpectations
 		);
 	}
 

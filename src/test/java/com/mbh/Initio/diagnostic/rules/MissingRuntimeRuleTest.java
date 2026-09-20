@@ -29,12 +29,15 @@ class MissingRuntimeRuleTest {
 				new ProjectMetadata("demo", null),
 				List.of(new DetectedTechnology("Java", TechnologyCategory.LANGUAGE, source)),
 				List.of(RuntimeRequirement.declared("java", "25", source)),
+				List.of(),
+				List.of(),
 				List.of()
 		);
 		AnalysisContext context = new AnalysisContext(
 				project,
 				new LocalEnvironmentAnalysis(
 						List.of(InstalledRuntime.missing("java")),
+						List.of(),
 						List.of()
 				)
 		);

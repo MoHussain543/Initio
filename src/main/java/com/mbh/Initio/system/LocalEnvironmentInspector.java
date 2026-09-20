@@ -6,6 +6,7 @@ import com.mbh.initio.model.InstalledRuntime;
 import com.mbh.initio.model.LocalEnvironmentAnalysis;
 import com.mbh.initio.model.ProjectAnalysis;
 import com.mbh.initio.model.RuntimeRequirement;
+import com.mbh.initio.model.ServiceStatus;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -16,9 +17,11 @@ import java.util.Objects;
 public final class LocalEnvironmentInspector {
 
 	private final RuntimeInspector runtimeInspector;
+	private final DockerInspector dockerInspector;
 
-	public LocalEnvironmentInspector(RuntimeInspector runtimeInspector) {
+	public LocalEnvironmentInspector(RuntimeInspector runtimeInspector, DockerInspector dockerInspector) {
 		this.runtimeInspector = Objects.requireNonNull(runtimeInspector, "runtimeInspector");
+		this.dockerInspector = Objects.requireNonNull(dockerInspector, "dockerInspector");
 	}
 
 	public LocalEnvironmentAnalysis inspect(ProjectAnalysis project) {
@@ -30,6 +33,9 @@ public final class LocalEnvironmentInspector {
 			}
 			runtimes.put(runtime, inspectRuntime(runtime));
 		}
+		if (!project.serviceRequirements().isEmpty() && !runtimes.containsKey("docker")) {
+			runtimes.put("docker", inspectRuntime("docker"));
+		}
 
 		EnvironmentProvider environmentProvider = new DefaultEnvironmentProvider(project.projectPath());
 		List<EnvironmentVariableStatus> environmentStatuses = new ArrayList<>();
@@ -37,9 +43,12 @@ public final class LocalEnvironmentInspector {
 			environmentStatuses.add(environmentProvider.inspect(requirement.name()));
 		}
 
+		List<ServiceStatus> serviceStatuses = dockerInspector.inspectServices(project);
+
 		return new LocalEnvironmentAnalysis(
 				List.copyOf(runtimes.values()),
-				List.copyOf(environmentStatuses)
+				List.copyOf(environmentStatuses),
+				List.copyOf(serviceStatuses)
 		);
 	}
 
@@ -47,6 +56,7 @@ public final class LocalEnvironmentInspector {
 		return switch (runtime) {
 			case "java" -> runtimeInspector.inspectJava();
 			case "node" -> runtimeInspector.inspectNode();
+			case "docker" -> runtimeInspector.inspectDocker();
 			default -> InstalledRuntime.unverified(runtime);
 		};
 	}
