@@ -1,8 +1,8 @@
 package com.mbh.initio.diagnostic;
 
 import com.mbh.initio.analysis.AnalysisContext;
-import com.mbh.initio.diagnostic.RuntimeRequirementEvaluator.Outcome;
 import com.mbh.initio.model.DiagnosticIssue;
+import com.mbh.initio.model.EnvironmentVariableRequirement;
 import com.mbh.initio.model.ReadinessScore;
 import com.mbh.initio.model.RuntimeRequirement;
 
@@ -19,16 +19,30 @@ public final class ReadinessCalculator {
 			if (requirement.requiredVersion() == null || requirement.requiredVersion().isBlank()) {
 				continue;
 			}
-			Outcome outcome = RuntimeRequirementEvaluator.outcome(
+			RuntimeRequirementEvaluator.Outcome outcome = RuntimeRequirementEvaluator.outcome(
 					requirement,
 					context.local().installedRuntime(requirement.runtime())
 			);
-			if (outcome == Outcome.UNVERIFIED) {
+			if (outcome == RuntimeRequirementEvaluator.Outcome.UNVERIFIED) {
 				unverifiedCount++;
 				continue;
 			}
 			verifiedTotal++;
-			if (outcome == Outcome.SATISFIED) {
+			if (outcome == RuntimeRequirementEvaluator.Outcome.SATISFIED) {
+				verifiedPassed++;
+			}
+		}
+
+		for (EnvironmentVariableRequirement requirement : context.project().environmentVariableRequirements()) {
+			EnvironmentRequirementEvaluator.Outcome outcome = EnvironmentRequirementEvaluator.outcome(
+					context.local().environmentVariableStatus(requirement.name())
+			);
+			if (outcome == EnvironmentRequirementEvaluator.Outcome.UNVERIFIED) {
+				unverifiedCount++;
+				continue;
+			}
+			verifiedTotal++;
+			if (outcome == EnvironmentRequirementEvaluator.Outcome.SATISFIED) {
 				verifiedPassed++;
 			}
 		}
@@ -43,7 +57,7 @@ public final class ReadinessCalculator {
 		if (verifiedTotal == 0) {
 			summary.append("Verified: none");
 		} else {
-			summary.append("Verified: ").append(verifiedPassed).append('/').append(verifiedTotal).append(" runtime requirements");
+			summary.append("Verified: ").append(verifiedPassed).append('/').append(verifiedTotal).append(" requirements");
 		}
 		if (unverifiedCount > 0) {
 			summary.append(" · ").append(unverifiedCount).append(" could not verify");

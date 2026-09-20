@@ -41,6 +41,10 @@ public final class FixtureRepositories {
 		return resolve("fullstack");
 	}
 
+	public static Path brokenEnv() {
+		return resolve("broken-env");
+	}
+
 	private static Path resolve(String name) {
 		URL resource = FixtureRepositories.class.getResource("/fixtures/" + name);
 		if (resource == null) {

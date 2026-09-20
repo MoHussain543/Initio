@@ -1,9 +1,11 @@
 package com.mbh.initio.cli.format;
 
 import com.mbh.initio.analysis.AnalysisResult;
+import com.mbh.initio.diagnostic.EnvironmentRequirementEvaluator;
 import com.mbh.initio.diagnostic.RuntimeRequirementEvaluator;
 import com.mbh.initio.diagnostic.RuntimeRequirementEvaluator.Outcome;
 import com.mbh.initio.model.DetectedTechnology;
+import com.mbh.initio.model.EnvironmentVariableRequirement;
 import com.mbh.initio.model.InstalledRuntime;
 import com.mbh.initio.model.ProjectAnalysis;
 import com.mbh.initio.model.RuntimeRequirement;
@@ -45,6 +47,16 @@ public final class CheckReportFormatter {
 		}
 		ReportLayout.blank(out);
 
+		ReportLayout.section(out, "Environment");
+		if (project.environmentVariableRequirements().isEmpty()) {
+			out.println("No environment variables declared");
+		} else {
+			for (EnvironmentVariableRequirement requirement : project.environmentVariableRequirements()) {
+				out.println(formatEnvironmentCheck(requirement, result));
+			}
+		}
+		ReportLayout.blank(out);
+
 		ReportLayout.section(out, "Result");
 		out.println("Project readiness: " + result.readiness().percent() + "%");
 		out.println(result.readiness().summary());
@@ -61,6 +73,18 @@ public final class CheckReportFormatter {
 					+ installed.map(InstalledRuntime::detectedVersion).orElse("unknown") + ")";
 			case SATISFIED -> "✓ " + label + " — installed ("
 					+ installed.map(InstalledRuntime::detectedVersion).orElse("unknown") + ")";
+		};
+	}
+
+	private static String formatEnvironmentCheck(EnvironmentVariableRequirement requirement, AnalysisResult result) {
+		EnvironmentRequirementEvaluator.Outcome outcome = EnvironmentRequirementEvaluator.outcome(
+				result.local().environmentVariableStatus(requirement.name())
+		);
+		return switch (outcome) {
+			case UNVERIFIED -> requirement.name() + " — Could not verify";
+			case MISSING -> "✗ " + requirement.name() + " — missing";
+			case EMPTY -> "✗ " + requirement.name() + " — empty";
+			case SATISFIED -> "✓ " + requirement.name() + " — present";
 		};
 	}
 

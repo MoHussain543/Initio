@@ -8,13 +8,17 @@ public record ProjectAnalysis(
 		Path projectPath,
 		ProjectMetadata metadata,
 		List<DetectedTechnology> technologies,
-		List<RuntimeRequirement> runtimeRequirements
+		List<RuntimeRequirement> runtimeRequirements,
+		List<EnvironmentVariableRequirement> environmentVariableRequirements
 ) {
 	public ProjectAnalysis {
 		Objects.requireNonNull(projectPath, "projectPath");
 		Objects.requireNonNull(metadata, "metadata");
 		technologies = List.copyOf(Objects.requireNonNull(technologies, "technologies"));
 		runtimeRequirements = List.copyOf(Objects.requireNonNull(runtimeRequirements, "runtimeRequirements"));
+		environmentVariableRequirements = List.copyOf(
+				Objects.requireNonNull(environmentVariableRequirements, "environmentVariableRequirements")
+		);
 	}
 
 	public List<DetectedTechnology> technologies(TechnologyCategory category) {

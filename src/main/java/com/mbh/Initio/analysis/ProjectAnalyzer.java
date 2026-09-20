@@ -2,6 +2,7 @@ package com.mbh.initio.analysis;
 
 import com.mbh.initio.detector.ProjectDetector;
 import com.mbh.initio.model.DetectedTechnology;
+import com.mbh.initio.model.EnvironmentVariableRequirement;
 import com.mbh.initio.model.ProjectAnalysis;
 import com.mbh.initio.model.ProjectMetadata;
 import com.mbh.initio.model.RuntimeRequirement;
@@ -35,6 +36,7 @@ public final class ProjectAnalyzer {
 		ProjectMetadata metadata = null;
 		List<DetectedTechnology> technologies = new ArrayList<>();
 		List<RuntimeRequirement> runtimeRequirements = new ArrayList<>();
+		List<EnvironmentVariableRequirement> environmentVariableRequirements = new ArrayList<>();
 
 		for (ProjectDetector detector : detectors) {
 			if (!detector.supports(context)) {
@@ -44,13 +46,15 @@ public final class ProjectAnalyzer {
 			metadata = mergeMetadata(metadata, result.metadata());
 			technologies.addAll(result.technologies());
 			runtimeRequirements.addAll(result.runtimeRequirements());
+			environmentVariableRequirements.addAll(result.environmentVariableRequirements());
 		}
 
 		return new ProjectAnalysis(
 				root,
 				fallbackMetadata(metadata, root),
 				technologies,
-				runtimeRequirements
+				runtimeRequirements,
+				environmentVariableRequirements
 		);
 	}
 

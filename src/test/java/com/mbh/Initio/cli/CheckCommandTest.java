@@ -45,6 +45,16 @@ class CheckCommandTest {
 	}
 
 	@Test
+	void checkListsMissingEnvironmentVariables() {
+		CommandResult output = InitioCli.execute("check", FixtureRepositories.brokenEnv().toString());
+
+		assertEquals(0, output.exitCode());
+		assertTrue(output.stdout().contains("Environment"));
+		assertTrue(output.stdout().contains("JWT_SECRET"));
+		assertTrue(output.stdout().contains("missing"));
+	}
+
+	@Test
 	void checkReportsAMissingPath() {
 		CommandResult output = InitioCli.execute("check", "/this/path/does-not-exist-initio");
 

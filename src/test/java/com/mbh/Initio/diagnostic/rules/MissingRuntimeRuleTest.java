@@ -28,11 +28,15 @@ class MissingRuntimeRuleTest {
 				Path.of("/demo"),
 				new ProjectMetadata("demo", null),
 				List.of(new DetectedTechnology("Java", TechnologyCategory.LANGUAGE, source)),
-				List.of(RuntimeRequirement.declared("java", "25", source))
+				List.of(RuntimeRequirement.declared("java", "25", source)),
+				List.of()
 		);
 		AnalysisContext context = new AnalysisContext(
 				project,
-				new LocalEnvironmentAnalysis(List.of(InstalledRuntime.missing("java")))
+				new LocalEnvironmentAnalysis(
+						List.of(InstalledRuntime.missing("java")),
+						List.of()
+				)
 		);
 
 		List<DiagnosticIssue> issues = new MissingRuntimeRule().evaluate(context);

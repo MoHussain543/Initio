@@ -67,7 +67,7 @@ public final class MavenDetector implements ProjectDetector {
 			requirements.add(RuntimeRequirement.declared("java", javaVersion, pomSource));
 		}
 
-		return new DetectionResult(metadata(pom), technologies, requirements);
+		return new DetectionResult(metadata(pom), technologies, requirements, List.of());
 	}
 
 	private static boolean isSpringBoot(MavenPom pom) {

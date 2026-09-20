@@ -3,6 +3,7 @@ package com.mbh.initio.analysis;
 import com.mbh.initio.diagnostic.DiagnosticEngine;
 import com.mbh.initio.diagnostic.ReadinessCalculator;
 import com.mbh.initio.diagnostic.rules.IncompatibleRuntimeVersionRule;
+import com.mbh.initio.diagnostic.rules.MissingEnvironmentVariableRule;
 import com.mbh.initio.diagnostic.rules.MissingRuntimeRule;
 import com.mbh.initio.model.InstalledRuntime;
 import com.mbh.initio.model.LocalEnvironmentAnalysis;
@@ -34,7 +35,11 @@ class AnalysisEngineTest {
 		AnalysisEngine engine = new AnalysisEngine(
 				ProjectAnalyzers.create(),
 				new LocalEnvironmentInspector(runtimeInspector),
-				new DiagnosticEngine(List.of(new MissingRuntimeRule(), new IncompatibleRuntimeVersionRule())),
+				new DiagnosticEngine(List.of(
+						new MissingRuntimeRule(),
+						new IncompatibleRuntimeVersionRule(),
+						new MissingEnvironmentVariableRule()
+				)),
 				new ReadinessCalculator()
 		);
 
