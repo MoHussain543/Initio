@@ -41,6 +41,26 @@ class ProjectAnalysisEnricherTest {
 	}
 
 	@Test
+	void configuredEnvironmentRequirementsAreAddedWithInitioYmlSource() {
+		ProjectAnalysis detected = analyzer.analyze(FixtureRepositories.withInitioConfig());
+
+		EffectiveProjectAnalysis effective = enricher.enrich(detected);
+
+		assertTrue(detected.environmentVariableRequirements().stream()
+				.anyMatch(requirement -> requirement.name().equals("DATABASE_URL")));
+		assertTrue(detected.environmentVariableRequirements().stream()
+				.noneMatch(requirement -> requirement.name().equals("INTERNAL_API_KEY")));
+		assertTrue(effective.project().environmentVariableRequirements().stream()
+				.anyMatch(requirement -> requirement.name().equals("DATABASE_URL")
+						&& requirement.source().file().toString().contains(".env.example")));
+		assertTrue(effective.project().environmentVariableRequirements().stream()
+				.anyMatch(requirement -> requirement.name().equals("INTERNAL_API_KEY")
+						&& requirement.source().file().toString().contains("initio.yml")));
+		assertTrue(effective.project().environmentVariableRequirements().stream()
+				.anyMatch(requirement -> requirement.name().equals("STRIPE_SECRET_KEY")));
+	}
+
+	@Test
 	void invalidConfigFailsWithControlledMessage() {
 		ProjectAnalysis detected = analyzer.analyze(FixtureRepositories.invalidInitioConfig());
 

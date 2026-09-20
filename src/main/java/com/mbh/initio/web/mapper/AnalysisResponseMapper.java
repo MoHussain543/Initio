@@ -110,7 +110,11 @@ public class AnalysisResponseMapper {
 		EnvironmentRequirementEvaluator.Outcome outcome = EnvironmentRequirementEvaluator.outcome(
 				result.local().environmentVariableStatus(requirement.name())
 		);
-		return new EnvironmentRowResponse(requirement.name(), outcome.name());
+		return new EnvironmentRowResponse(
+				requirement.name(),
+				outcome.name(),
+				requirement.source().file().toString()
+		);
 	}
 
 	private static List<ServiceRowResponse> toServiceRows(AnalysisResult result) {

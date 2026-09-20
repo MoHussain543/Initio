@@ -44,4 +44,13 @@ class DoctorCommandTest {
 		assertEquals(0, output.exitCode());
 		assertTrue(output.stdout().contains("No issues found."));
 	}
+
+	@Test
+	void doctorReportsConfiguredEnvironmentVariablesAsMissing() {
+		CommandResult output = InitioCli.execute("doctor", FixtureRepositories.withInitioConfig().toString());
+
+		assertEquals(1, output.exitCode());
+		assertTrue(output.stdout().contains("INTERNAL_API_KEY"));
+		assertTrue(output.stdout().contains("initio.yml"));
+	}
 }

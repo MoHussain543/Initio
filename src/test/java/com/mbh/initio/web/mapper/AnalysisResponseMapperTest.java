@@ -37,4 +37,14 @@ class AnalysisResponseMapperTest {
 			assertFalse(row.status().isBlank());
 		}
 	}
+
+	@Test
+	void configuredEnvironmentRowsIncludeInitioYmlSource() {
+		AnalysisResult result = AnalysisEngines.createDefault().run(FixtureRepositories.withInitioConfig());
+
+		var response = mapper.toResponse(result);
+		assertTrue(response.environment().stream().anyMatch(row ->
+				"INTERNAL_API_KEY".equals(row.name()) && row.source().contains("initio.yml")));
+		assertTrue(response.environment().stream().noneMatch(row -> row.name() == null));
+	}
 }

@@ -88,4 +88,14 @@ class CheckCommandTest {
 		assertTrue(output.stderr().contains("commands[0].category"));
 		assertTrue(output.stderr().contains("initio config validate"));
 	}
+
+	@Test
+	void checkIncludesConfiguredEnvironmentRequirements() {
+		CommandResult output = InitioCli.execute("check", FixtureRepositories.withInitioConfig().toString());
+
+		assertEquals(0, output.exitCode());
+		assertTrue(output.stdout().contains("DATABASE_URL"));
+		assertTrue(output.stdout().contains("INTERNAL_API_KEY"));
+		assertTrue(output.stdout().contains("initio.yml"));
+	}
 }

@@ -169,10 +169,10 @@ public final class CheckReportFormatter {
 				result.local().environmentVariableStatus(requirement.name())
 		);
 		return switch (outcome) {
-			case UNVERIFIED -> requirement.name() + " — Could not verify";
-			case MISSING -> "✗ " + requirement.name() + " — missing";
-			case EMPTY -> "✗ " + requirement.name() + " — empty";
-			case SATISFIED -> "✓ " + requirement.name() + " — present";
+			case SATISFIED -> "✓ " + requirement.name() + " — present · " + requirement.source().file();
+			case UNVERIFIED -> requirement.name() + " — Could not verify · " + requirement.source().file();
+			case MISSING -> "✗ " + requirement.name() + " — missing · " + requirement.source().file();
+			case EMPTY -> "✗ " + requirement.name() + " — empty · " + requirement.source().file();
 		};
 	}
 
