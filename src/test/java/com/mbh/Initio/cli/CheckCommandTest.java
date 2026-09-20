@@ -31,7 +31,8 @@ class CheckCommandTest {
 		assertTrue(output.stdout().contains("Maven"));
 		assertTrue(output.stdout().contains("Maven Wrapper"));
 		assertTrue(output.stdout().contains("Java 25"));
-		assertTrue(output.stdout().contains("Local environment: not checked"));
+		assertTrue(output.stdout().contains("Runtime"));
+		assertTrue(output.stdout().contains("Project readiness:"));
 	}
 
 	@Test

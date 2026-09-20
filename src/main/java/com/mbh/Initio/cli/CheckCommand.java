@@ -1,9 +1,9 @@
 package com.mbh.initio.cli;
 
-import com.mbh.initio.analysis.ProjectAnalyzers;
+import com.mbh.initio.analysis.AnalysisEngines;
+import com.mbh.initio.analysis.AnalysisResult;
 import com.mbh.initio.cli.format.CheckReportFormatter;
 import com.mbh.initio.detector.DetectionException;
-import com.mbh.initio.model.ProjectAnalysis;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Parameters;
@@ -32,8 +32,8 @@ public class CheckCommand implements Callable<Integer> {
 	public Integer call() {
 		try {
 			Path projectPath = ProjectPathResolver.resolve(path);
-			ProjectAnalysis analysis = ProjectAnalyzers.create().analyze(projectPath);
-			new CheckReportFormatter().write(analysis, spec.commandLine().getOut());
+			AnalysisResult result = AnalysisEngines.createDefault().run(projectPath);
+			new CheckReportFormatter().write(result, spec.commandLine().getOut());
 			return 0;
 		} catch (IllegalArgumentException | DetectionException exception) {
 			spec.commandLine().getErr().println(exception.getMessage());
