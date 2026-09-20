@@ -4,9 +4,80 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Initio Dashboard</title>
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/components.css">
 </head>
 <body>
-  <h1>Initio</h1>
-  <p>Dashboard UI will load here in a later slice.</p>
+  <div id="app" class="app">
+    <header class="site-header">
+      <div class="brand">
+        <span class="brand-mark">INITIO</span>
+        <span class="brand-tagline">Local Development Diagnostics</span>
+      </div>
+      <div class="project-header">
+        <h1 id="project-name" class="project-name">—</h1>
+        <p id="project-path" class="project-path"></p>
+      </div>
+    </header>
+
+    <div id="status-banner" class="status-banner hidden" role="status" aria-live="polite"></div>
+
+    <main class="dashboard-main">
+      <section class="panel readiness-panel" aria-labelledby="readiness-heading">
+        <div class="panel-head">
+          <h2 id="readiness-heading">Project Readiness</h2>
+          <button type="button" id="reanalyze-btn" class="btn btn-secondary" disabled>
+            Re-analyze
+          </button>
+        </div>
+        <div id="readiness-body" class="readiness-body">
+          <p class="placeholder">Waiting for analysis…</p>
+        </div>
+      </section>
+
+      <div class="grid-two">
+        <section class="panel" id="section-stack" aria-labelledby="stack-heading">
+          <h2 id="stack-heading">Stack</h2>
+          <div class="section-body" data-section="stack"></div>
+        </section>
+        <section class="panel" id="section-runtime" aria-labelledby="runtime-heading">
+          <h2 id="runtime-heading">Runtime</h2>
+          <div class="section-body" data-section="runtime"></div>
+        </section>
+        <section class="panel" id="section-services" aria-labelledby="services-heading">
+          <h2 id="services-heading">Services</h2>
+          <div class="section-body" data-section="services"></div>
+        </section>
+        <section class="panel" id="section-ports" aria-labelledby="ports-heading">
+          <h2 id="ports-heading">Ports</h2>
+          <div class="section-body" data-section="ports"></div>
+        </section>
+      </div>
+
+      <section class="panel" id="section-environment" aria-labelledby="environment-heading">
+        <h2 id="environment-heading">Environment</h2>
+        <div class="section-body" data-section="environment"></div>
+      </section>
+
+      <section class="panel panel-issues" id="section-issues" aria-labelledby="issues-heading">
+        <h2 id="issues-heading">Issues</h2>
+        <div class="section-body" data-section="issues"></div>
+      </section>
+
+      <section class="panel" id="section-commands" aria-labelledby="commands-heading">
+        <h2 id="commands-heading">Commands</h2>
+        <div class="section-body" data-section="commands"></div>
+      </section>
+
+      <section class="panel" id="section-ci" aria-labelledby="ci-heading">
+        <h2 id="ci-heading">CI</h2>
+        <div class="section-body" data-section="ci"></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/dashboard.js"></script>
 </body>
 </html>
