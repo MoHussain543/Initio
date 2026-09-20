@@ -28,6 +28,11 @@ class InfoCommandTest {
 		assertTrue(output.stdout().contains("Maven Wrapper"));
 		assertTrue(output.stdout().contains("GitHub Actions"));
 		assertFalse(output.stdout().contains("Package managers"));
+		assertTrue(output.stdout().contains("CI"));
+		assertTrue(output.stdout().contains("Java 25"));
+		assertTrue(output.stdout().contains("./mvnw test"));
+		assertTrue(output.stdout().contains("Commands"));
+		assertTrue(output.stdout().contains("initio commands"));
 	}
 
 	@Test
@@ -40,6 +45,19 @@ class InfoCommandTest {
 		assertTrue(output.stdout().contains("Vite"));
 		assertTrue(output.stdout().contains("Package managers"));
 		assertTrue(output.stdout().contains("npm"));
+		assertTrue(output.stdout().contains("Commands"));
+		assertTrue(output.stdout().contains("npm run dev"));
+	}
+
+	@Test
+	void infoListsComposeServicesForDockerizedFixture() {
+		CommandResult output = InitioCli.execute("info", FixtureRepositories.dockerized().toString());
+
+		assertEquals(0, output.exitCode());
+		assertTrue(output.stdout().contains("Compose services"));
+		assertTrue(output.stdout().contains("postgres"));
+		assertTrue(output.stdout().contains("redis"));
+		assertTrue(output.stdout().contains("Docker Compose"));
 	}
 
 	@Test
