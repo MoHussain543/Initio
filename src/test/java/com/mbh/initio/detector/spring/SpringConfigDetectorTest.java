@@ -23,4 +23,14 @@ class SpringConfigDetectorTest {
 		assertEquals(8080, result.portExpectations().getFirst().port());
 		assertEquals(PortRole.APPLICATION, result.portExpectations().getFirst().role());
 	}
+
+	@Test
+	void detectsApplicationPortFromApplicationYaml() {
+		ProjectContext context = new ProjectContext(FixtureRepositories.springYaml());
+
+		assertTrue(detector.supports(context));
+		var result = detector.detect(context);
+
+		assertEquals(9090, result.portExpectations().getFirst().port());
+	}
 }

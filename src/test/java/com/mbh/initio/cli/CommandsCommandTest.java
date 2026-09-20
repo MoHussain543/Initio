@@ -36,4 +36,13 @@ class CommandsCommandTest {
 		assertTrue(output.stdout().contains("npm run dev"));
 		assertTrue(output.stdout().contains("Declared"));
 	}
+
+	@Test
+	void commandsListsMakefileTargets() {
+		CommandResult output = InitioCli.execute("commands", FixtureRepositories.makeTargets().toString());
+
+		assertEquals(0, output.exitCode());
+		assertTrue(output.stdout().contains("make test"));
+		assertTrue(output.stdout().contains("Inferred"));
+	}
 }

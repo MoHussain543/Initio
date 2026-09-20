@@ -53,6 +53,14 @@ public final class FixtureRepositories {
 		return resolve("ci-java-drift");
 	}
 
+	public static Path springYaml() {
+		return resolve("spring-yaml");
+	}
+
+	public static Path makeTargets() {
+		return resolve("make-targets");
+	}
+
 	private static Path resolve(String name) {
 		URL resource = FixtureRepositories.class.getResource("/fixtures/" + name);
 		if (resource == null) {
