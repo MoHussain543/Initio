@@ -29,6 +29,8 @@ class DashboardCommandTest {
 		assertTrue(output.stdout().contains("--port"));
 		assertTrue(output.stdout().contains("7331"));
 		assertTrue(output.stdout().contains("--host"));
+		assertTrue(output.stdout().contains("127.0.0.1"));
+		assertTrue(output.stdout().contains("initio dashboard /path/to/repo"));
 	}
 
 	@Test

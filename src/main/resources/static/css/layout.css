@@ -61,4 +61,32 @@
   .app {
     padding: 1rem 1rem 2rem;
   }
+
+  .project-name {
+    font-size: 1.375rem;
+  }
+
+  .readiness-score {
+    font-size: 2.25rem;
+  }
+
+  .panel-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .panel-head .btn-secondary {
+    width: 100%;
+    text-align: center;
+  }
+
+  .status-row-body {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .command-item .btn-copy {
+    width: 100%;
+    margin-top: 0.25rem;
+  }
 }

@@ -13,7 +13,14 @@ import java.util.concurrent.Callable;
 @Command(
 		name = "dashboard",
 		mixinStandardHelpOptions = true,
-		description = "Start the local web dashboard for project diagnostics."
+		description = {
+				"Start the local web dashboard for one project (this server instance).",
+				"Defaults: host 127.0.0.1, port 7331.",
+				"Examples:",
+				"  initio dashboard",
+				"  initio dashboard /path/to/repo",
+				"  initio dashboard --port 7332"
+		}
 )
 public class DashboardCommand implements Callable<Integer> {
 
