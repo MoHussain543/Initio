@@ -54,6 +54,7 @@ class DoctorCommandTest {
 		assertTrue(output.stdout().contains("INTERNAL_API_KEY"));
 		assertTrue(output.stdout().contains("initio.yml"));
 		assertFalse(output.stdout().contains("LEGACY_API_KEY"));
+		assertFalse(output.stdout().contains("docker compose up -d redis"));
 	}
 
 	@Test

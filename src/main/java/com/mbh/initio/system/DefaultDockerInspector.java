@@ -33,6 +33,14 @@ public final class DefaultDockerInspector implements DockerInspector {
 		if (requirements.isEmpty()) {
 			return List.of();
 		}
+		List<ServiceRequirement> composeRequirements = requirements.stream()
+				.filter(ServiceRequirement::composeBacked)
+				.toList();
+		if (composeRequirements.isEmpty()) {
+			return requirements.stream()
+					.map(requirement -> ServiceStatus.unverified(requirement.serviceName()))
+					.toList();
+		}
 		if (!isDockerAvailable()) {
 			return requirements.stream()
 					.map(requirement -> ServiceStatus.unverified(requirement.serviceName()))
@@ -40,7 +48,7 @@ public final class DefaultDockerInspector implements DockerInspector {
 		}
 
 		Map<Path, List<ServiceRequirement>> byComposeFile = new LinkedHashMap<>();
-		for (ServiceRequirement requirement : requirements) {
+		for (ServiceRequirement requirement : composeRequirements) {
 			byComposeFile.computeIfAbsent(requirement.composeFile(), ignored -> new ArrayList<>()).add(requirement);
 		}
 

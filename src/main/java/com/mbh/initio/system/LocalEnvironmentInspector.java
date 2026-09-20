@@ -6,6 +6,7 @@ import com.mbh.initio.model.InstalledRuntime;
 import com.mbh.initio.model.LocalEnvironmentAnalysis;
 import com.mbh.initio.model.ProjectAnalysis;
 import com.mbh.initio.model.RuntimeRequirement;
+import com.mbh.initio.model.ServiceRequirement;
 import com.mbh.initio.model.ServiceStatus;
 
 import java.util.ArrayList;
@@ -39,7 +40,8 @@ public final class LocalEnvironmentInspector {
 			}
 			runtimes.put(runtime, inspectRuntime(runtime));
 		}
-		if (!project.serviceRequirements().isEmpty() && !runtimes.containsKey("docker")) {
+		if (project.serviceRequirements().stream().anyMatch(ServiceRequirement::composeBacked)
+				&& !runtimes.containsKey("docker")) {
 			runtimes.put("docker", inspectRuntime("docker"));
 		}
 

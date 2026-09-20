@@ -99,6 +99,8 @@ class CheckCommandTest {
 		assertTrue(output.stdout().contains("initio.yml"));
 		assertTrue(output.stdout().contains("Java 25"));
 		assertTrue(output.stdout().contains("Node >=22"));
+		assertTrue(output.stdout().contains("redis"));
+		assertTrue(output.stdout().contains("6379"));
 	}
 
 	@Test

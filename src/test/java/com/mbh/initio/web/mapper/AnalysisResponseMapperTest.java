@@ -59,4 +59,13 @@ class AnalysisResponseMapperTest {
 						&& command.sourceFile().contains("initio.yml")
 		));
 	}
+
+	@Test
+	void configuredServiceHintsAppearInServicesAndPorts() {
+		AnalysisResult result = AnalysisEngines.createDefault().run(FixtureRepositories.withInitioConfig());
+
+		var response = mapper.toResponse(result);
+		assertTrue(response.services().stream().anyMatch(service -> "redis".equals(service.name())));
+		assertTrue(response.ports().stream().anyMatch(port -> port.port() == 6379));
+	}
 }

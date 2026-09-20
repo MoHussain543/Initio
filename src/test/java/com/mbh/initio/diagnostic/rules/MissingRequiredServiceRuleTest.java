@@ -48,4 +48,33 @@ class MissingRequiredServiceRuleTest {
 		assertEquals(1, issues.size());
 		assertTrue(issues.getFirst().title().contains("postgres is not running"));
 	}
+
+	@Test
+	void ignoresConfiguredServiceHints() {
+		DetectionSource source = new DetectionSource(Path.of("initio.yml"), "Configured", DetectionConfidence.HIGH);
+		ProjectAnalysis project = new ProjectAnalysis(
+				Path.of("/demo"),
+				new ProjectMetadata("demo", null),
+				List.of(),
+				List.of(),
+				List.of(),
+				List.of(com.mbh.initio.model.ServiceRequirement.configured("redis", 6379, source)),
+				List.of(),
+				List.of(),
+				List.of()
+		);
+		AnalysisContext context = new AnalysisContext(
+				project,
+				new LocalEnvironmentAnalysis(
+						List.of(InstalledRuntime.available("docker", "27.0.0")),
+						List.of(),
+						List.of(ServiceStatus.stopped("redis")),
+						List.of()
+				)
+		);
+
+		var issues = new MissingRequiredServiceRule().evaluate(context);
+
+		assertEquals(0, issues.size());
+	}
 }

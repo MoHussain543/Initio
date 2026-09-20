@@ -7,8 +7,12 @@ import com.mbh.initio.model.DetectionSource;
 import com.mbh.initio.model.EnvironmentVariableRequirement;
 import com.mbh.initio.model.ProjectAnalysis;
 import com.mbh.initio.model.ProjectCommand;
+import com.mbh.initio.model.PortExpectation;
+import com.mbh.initio.model.PortRole;
 import com.mbh.initio.model.RuntimeRequirement;
+import com.mbh.initio.model.ServiceRequirement;
 import com.mbh.initio.projectconfig.ConfiguredCommand;
+import com.mbh.initio.projectconfig.ConfiguredService;
 import com.mbh.initio.projectconfig.InitioConfigException;
 import com.mbh.initio.projectconfig.InitioConfigLoadResult;
 import com.mbh.initio.projectconfig.InitioConfigLoader;
@@ -53,9 +57,12 @@ public final class ProjectAnalysisEnricher {
 		List<EnvironmentVariableRequirement> environment = mergeEnvironment(detected, config, configFile);
 		List<ProjectCommand> commands = mergeCommands(detected, config, configFile);
 		List<RuntimeRequirement> runtimes = mergeRuntimes(detected, config, configFile);
+		MergedServices mergedServices = mergeServices(detected, config, configFile);
 		if (environment == detected.environmentVariableRequirements()
 				&& commands == detected.projectCommands()
-				&& runtimes == detected.runtimeRequirements()) {
+				&& runtimes == detected.runtimeRequirements()
+				&& mergedServices.services() == detected.serviceRequirements()
+				&& mergedServices.ports() == detected.portExpectations()) {
 			return detected;
 		}
 		return new ProjectAnalysis(
@@ -64,8 +71,8 @@ public final class ProjectAnalysisEnricher {
 				detected.technologies(),
 				runtimes,
 				environment,
-				detected.serviceRequirements(),
-				detected.portExpectations(),
+				mergedServices.services(),
+				mergedServices.ports(),
 				commands,
 				detected.ciExpectations()
 		);
@@ -180,6 +187,55 @@ public final class ProjectAnalysisEnricher {
 			}
 		}
 		return false;
+	}
+
+	private static MergedServices mergeServices(
+			ProjectAnalysis detected,
+			InitioProjectConfig config,
+			Path configFile
+	) {
+		if (config.services().isEmpty()) {
+			return new MergedServices(detected.serviceRequirements(), detected.portExpectations());
+		}
+		Set<String> seenNames = new LinkedHashSet<>();
+		for (ServiceRequirement requirement : detected.serviceRequirements()) {
+			seenNames.add(requirement.serviceName().toLowerCase());
+		}
+		Set<Integer> seenPorts = new LinkedHashSet<>();
+		for (PortExpectation expectation : detected.portExpectations()) {
+			seenPorts.add(expectation.port());
+		}
+		List<ServiceRequirement> services = new ArrayList<>(detected.serviceRequirements());
+		List<PortExpectation> ports = new ArrayList<>(detected.portExpectations());
+		DetectionSource source = configuredSource(detected.projectPath(), configFile);
+		boolean addedService = false;
+		boolean addedPort = false;
+		for (ConfiguredService configured : config.services()) {
+			if (!seenNames.add(configured.name().toLowerCase())) {
+				continue;
+			}
+			services.add(ServiceRequirement.configured(configured.name(), configured.port(), source));
+			addedService = true;
+			if (seenPorts.add(configured.port())) {
+				ports.add(new PortExpectation(
+						configured.port(),
+						PortRole.EXPECTED_SERVICE,
+						configured.name(),
+						source
+				));
+				addedPort = true;
+			}
+		}
+		if (!addedService) {
+			return new MergedServices(detected.serviceRequirements(), detected.portExpectations());
+		}
+		return new MergedServices(
+				List.copyOf(services),
+				addedPort ? List.copyOf(ports) : detected.portExpectations()
+		);
+	}
+
+	private record MergedServices(List<ServiceRequirement> services, List<PortExpectation> ports) {
 	}
 
 	private static DetectionSource configuredSource(Path projectPath, Path configFile) {

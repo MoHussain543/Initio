@@ -144,6 +144,50 @@ class ProjectAnalysisEnricherTest {
 	}
 
 	@Test
+	void configuredServicesAreAddedAsNameAndPortHints() {
+		ProjectAnalysis detected = analyzer.analyze(FixtureRepositories.withInitioConfig());
+
+		EffectiveProjectAnalysis effective = enricher.enrich(detected);
+
+		assertTrue(detected.serviceRequirements().isEmpty());
+		assertTrue(detected.portExpectations().isEmpty());
+		assertTrue(effective.project().serviceRequirements().stream().anyMatch(requirement ->
+				requirement.serviceName().equals("redis")
+						&& requirement.publishedHostPorts().equals(List.of(6379))
+						&& !requirement.composeBacked()
+						&& requirement.image() == null
+						&& requirement.source().file().toString().contains("initio.yml")
+		));
+		assertTrue(effective.project().portExpectations().stream().anyMatch(expectation ->
+				expectation.port() == 6379
+						&& expectation.role() == com.mbh.initio.model.PortRole.EXPECTED_SERVICE
+						&& expectation.label().equals("redis")
+						&& expectation.source().file().toString().contains("initio.yml")
+		));
+	}
+
+	@Test
+	void doesNotReplaceComposeServicesWithConfiguredHints() {
+		ProjectAnalysis detected = analyzer.analyze(FixtureRepositories.dockerized());
+		InitioProjectConfig config = new InitioProjectConfig(
+				List.of(),
+				Map.of(),
+				List.of(),
+				List.of(new com.mbh.initio.projectconfig.ConfiguredService("redis", 6379)),
+				List.of()
+		);
+
+		ProjectAnalysis project = ProjectAnalysisEnricher.apply(
+				detected,
+				config,
+				detected.projectPath().resolve("initio.yml")
+		);
+
+		assertEquals(detected.serviceRequirements(), project.serviceRequirements());
+		assertTrue(project.serviceRequirements().stream().allMatch(com.mbh.initio.model.ServiceRequirement::composeBacked));
+	}
+
+	@Test
 	void invalidConfigFailsWithControlledMessage() {
 		ProjectAnalysis detected = analyzer.analyze(FixtureRepositories.invalidInitioConfig());
 

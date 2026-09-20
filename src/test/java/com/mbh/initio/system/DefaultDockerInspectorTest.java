@@ -58,4 +58,29 @@ class DefaultDockerInspectorTest {
 		assertEquals(VerificationState.VERIFIED, statuses.get(0).verificationState());
 		assertEquals("postgres", statuses.get(0).serviceName());
 	}
+
+	@Test
+	void doesNotInspectComposeForConfiguredServiceHints() {
+		DetectionSource source = new DetectionSource(Path.of("initio.yml"), "Configured", DetectionConfidence.HIGH);
+		ProjectAnalysis project = new ProjectAnalysis(
+				Path.of("/demo"),
+				new ProjectMetadata("demo", null),
+				List.of(),
+				List.of(),
+				List.of(),
+				List.of(ServiceRequirement.configured("redis", 6379, source)),
+				List.of(),
+				List.of(),
+				List.of()
+		);
+		CommandExecutor commandExecutor = (command, timeout) -> {
+			throw new AssertionError("docker should not be invoked for configured service hints: " + command);
+		};
+
+		List<ServiceStatus> statuses = new DefaultDockerInspector(commandExecutor).inspectServices(project);
+
+		assertEquals(1, statuses.size());
+		assertEquals("redis", statuses.get(0).serviceName());
+		assertEquals(VerificationState.UNVERIFIED, statuses.get(0).verificationState());
+	}
 }

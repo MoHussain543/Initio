@@ -65,6 +65,9 @@ public final class ReadinessCalculator {
 		}
 
 		for (ServiceRequirement requirement : context.project().serviceRequirements()) {
+			if (!requirement.composeBacked()) {
+				continue;
+			}
 			ServiceRequirementEvaluator.Outcome outcome = ServiceRequirementEvaluator.outcome(
 					context.local().serviceStatus(requirement.serviceName())
 			);

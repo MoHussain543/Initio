@@ -7,6 +7,7 @@ import com.mbh.initio.model.DiagnosticIssue;
 import com.mbh.initio.model.DiagnosticSeverity;
 import com.mbh.initio.model.InstalledRuntime;
 import com.mbh.initio.model.RequirementStatus;
+import com.mbh.initio.model.ServiceRequirement;
 import com.mbh.initio.model.VerificationState;
 
 import java.util.ArrayList;
@@ -17,7 +18,7 @@ public final class DockerUnavailableRule implements DiagnosticRule {
 
 	@Override
 	public List<DiagnosticIssue> evaluate(AnalysisContext context) {
-		if (context.project().serviceRequirements().isEmpty()) {
+		if (context.project().serviceRequirements().stream().noneMatch(ServiceRequirement::composeBacked)) {
 			return List.of();
 		}
 		Optional<InstalledRuntime> docker = context.local().installedRuntime("docker");

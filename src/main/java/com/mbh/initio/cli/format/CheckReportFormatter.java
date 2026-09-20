@@ -120,9 +120,9 @@ public final class CheckReportFormatter {
 			label = label + " (" + requirement.image() + ")";
 		}
 		return switch (outcome) {
-			case UNVERIFIED -> label + " — Could not verify";
-			case STOPPED -> "✗ " + label + " — not running";
-			case RUNNING -> "✓ " + label + " — running";
+			case UNVERIFIED -> label + " — Could not verify · " + requirement.source().file();
+			case STOPPED -> "✗ " + label + " — not running · " + requirement.source().file();
+			case RUNNING -> "✓ " + label + " — running · " + requirement.source().file();
 		};
 	}
 

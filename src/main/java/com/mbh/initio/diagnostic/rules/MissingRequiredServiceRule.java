@@ -20,7 +20,7 @@ public final class MissingRequiredServiceRule implements DiagnosticRule {
 
 	@Override
 	public List<DiagnosticIssue> evaluate(AnalysisContext context) {
-		if (context.project().serviceRequirements().isEmpty()) {
+		if (context.project().serviceRequirements().stream().noneMatch(ServiceRequirement::composeBacked)) {
 			return List.of();
 		}
 		Optional<InstalledRuntime> docker = context.local().installedRuntime("docker");
@@ -32,6 +32,9 @@ public final class MissingRequiredServiceRule implements DiagnosticRule {
 
 		List<DiagnosticIssue> issues = new ArrayList<>();
 		for (ServiceRequirement requirement : context.project().serviceRequirements()) {
+			if (!requirement.composeBacked()) {
+				continue;
+			}
 			Outcome outcome = ServiceRequirementEvaluator.outcome(
 					context.local().serviceStatus(requirement.serviceName())
 			);
