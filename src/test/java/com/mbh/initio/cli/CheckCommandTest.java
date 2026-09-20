@@ -18,6 +18,7 @@ class CheckCommandTest {
 		assertTrue(output.stdout().contains("check"));
 		assertTrue(output.stdout().contains("doctor"));
 		assertTrue(output.stdout().contains("info"));
+		assertTrue(output.stdout().contains("config"));
 	}
 
 	@Test

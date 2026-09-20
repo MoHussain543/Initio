@@ -11,6 +11,7 @@ import picocli.CommandLine.Command;
 		subcommands = {
 				CheckCommand.class,
 				CommandsCommand.class,
+				ConfigCommand.class,
 				DashboardCommand.class,
 				DoctorCommand.class,
 				InfoCommand.class

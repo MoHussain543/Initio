@@ -55,4 +55,13 @@ class CommandsCommandTest {
 		assertTrue(output.stdout().contains("Configured"));
 		assertTrue(output.stdout().contains("initio.yml"));
 	}
+
+	@Test
+	void commandsFailsCleanlyWhenInitioYmlIsInvalid() {
+		CommandResult output = InitioCli.execute("commands", FixtureRepositories.invalidInitioConfig().toString());
+
+		assertEquals(1, output.exitCode());
+		assertTrue(output.stderr().contains("Initio could not analyze this project"));
+		assertTrue(output.stderr().contains("initio config validate"));
+	}
 }

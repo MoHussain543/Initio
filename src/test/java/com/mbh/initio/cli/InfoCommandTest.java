@@ -71,4 +71,13 @@ class InfoCommandTest {
 		assertFalse(output.stdout().contains("Frameworks"));
 		assertFalse(output.stdout().contains("Tools"));
 	}
+
+	@Test
+	void infoFailsCleanlyWhenInitioYmlIsInvalid() {
+		CommandResult output = InitioCli.execute("info", FixtureRepositories.invalidInitioConfig().toString());
+
+		assertEquals(1, output.exitCode());
+		assertTrue(output.stderr().contains("Initio could not analyze this project"));
+		assertTrue(output.stderr().contains("initio config validate"));
+	}
 }

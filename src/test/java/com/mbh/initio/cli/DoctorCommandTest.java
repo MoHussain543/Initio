@@ -75,4 +75,14 @@ class DoctorCommandTest {
 		assertTrue(output.stdout().contains("21"));
 		assertTrue(output.stdout().contains("25"));
 	}
+
+	@Test
+	void doctorFailsCleanlyWhenInitioYmlIsInvalid() {
+		CommandResult output = InitioCli.execute("doctor", FixtureRepositories.invalidInitioConfig().toString());
+
+		assertEquals(1, output.exitCode());
+		assertTrue(output.stderr().contains("Initio could not analyze this project"));
+		assertTrue(output.stderr().contains("commands[0].category"));
+		assertTrue(output.stderr().contains("initio config validate"));
+	}
 }
