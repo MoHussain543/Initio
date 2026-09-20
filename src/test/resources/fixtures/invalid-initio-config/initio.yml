@@ -1,0 +1,4 @@
+commands:
+  - name: backend
+    category: STARTUP
+    command: "./scripts/start-backend.sh"

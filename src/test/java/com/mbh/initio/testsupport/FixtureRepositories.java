@@ -61,6 +61,14 @@ public final class FixtureRepositories {
 		return resolve("make-targets");
 	}
 
+	public static Path withInitioConfig() {
+		return resolve("with-initio-config");
+	}
+
+	public static Path invalidInitioConfig() {
+		return resolve("invalid-initio-config");
+	}
+
 	private static Path resolve(String name) {
 		URL resource = FixtureRepositories.class.getResource("/fixtures/" + name);
 		if (resource == null) {
