@@ -2,6 +2,8 @@ package com.mbh.initio.detector.maven;
 
 import com.mbh.initio.detector.DetectionException;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -10,46 +12,46 @@ import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class MavenPomParser {
 
-	private static final String PROJECT = "/*[local-name()='project']";
 	private static final String SPRING_BOOT_GROUP_ID = "org.springframework.boot";
 
 	public MavenPom parse(Path pomFile) {
 		Document document = readDocument(pomFile);
-		XPath xpath = XPathFactory.newInstance().newXPath();
-		try {
-			return new MavenPom(
-					text(xpath, document, PROJECT + "/*[local-name()='artifactId']"),
-					text(xpath, document, PROJECT + "/*[local-name()='name']"),
-					text(xpath, document, PROJECT + "/*[local-name()='description']"),
-					text(xpath, document, PROJECT + "/*[local-name()='parent']/*[local-name()='groupId']"),
-					text(xpath, document, PROJECT + "/*[local-name()='parent']/*[local-name()='artifactId']"),
-					text(xpath, document, PROJECT + "/*[local-name()='properties']/*[local-name()='java.version']"),
-					text(xpath, document, PROJECT + "/*[local-name()='properties']/*[local-name()='maven.compiler.release']"),
-					text(xpath, document, PROJECT + "/*[local-name()='properties']/*[local-name()='maven.compiler.source']"),
-					firstText(xpath, document, compilerPluginValue("release")),
-					firstText(xpath, document, compilerPluginValue("source")),
-					hasSpringBootDependency(xpath, document)
-			);
-		} catch (XPathExpressionException exception) {
-			throw new DetectionException("Unable to read " + pomFile.getFileName() + ".", exception);
-		}
+		Element project = document.getDocumentElement();
+		Element parent = childElement(project, "parent");
+		Element properties = childElement(project, "properties");
+		Element compilerPluginConfig = findCompilerPluginConfiguration(project);
+		return new MavenPom(
+				childText(project, "artifactId"),
+				childText(project, "name"),
+				childText(project, "description"),
+				childText(parent, "groupId"),
+				childText(parent, "artifactId"),
+				childText(properties, "java.version"),
+				childText(properties, "maven.compiler.release"),
+				childText(properties, "maven.compiler.source"),
+				childText(compilerPluginConfig, "release"),
+				childText(compilerPluginConfig, "source"),
+				hasSpringBootDependency(project)
+		);
 	}
 
 	private static Document readDocument(Path pomFile) {
 		try (InputStream input = Files.newInputStream(pomFile)) {
 			return secureDocumentBuilder().parse(input);
 		} catch (Exception exception) {
-			throw new DetectionException("Unable to read " + pomFile.getFileName() + ".", exception);
+			throw new DetectionException(
+					"Unable to read " + pomFile.getFileName() + ": "
+							+ exception.getClass().getSimpleName() + ": " + exception.getMessage(),
+					exception
+			);
 		}
 	}
 
@@ -80,44 +82,95 @@ public final class MavenPomParser {
 		return builder;
 	}
 
-	private static boolean hasSpringBootDependency(XPath xpath, Document document) throws XPathExpressionException {
-		return exists(xpath, document, dependencyGroupId(PROJECT + "/*[local-name()='dependencies']"))
-				|| exists(xpath, document, dependencyGroupId(PROJECT + "/*[local-name()='dependencyManagement']/*[local-name()='dependencies']"));
+	private static Element findCompilerPluginConfiguration(Element project) {
+		Element build = childElement(project, "build");
+		if (build == null) {
+			return null;
+		}
+		Element inPlugins = findCompilerPluginConfigurationIn(childElement(build, "plugins"));
+		if (inPlugins != null) {
+			return inPlugins;
+		}
+		Element pluginManagement = childElement(build, "pluginManagement");
+		return findCompilerPluginConfigurationIn(pluginManagement == null ? null : childElement(pluginManagement, "plugins"));
 	}
 
-	private static String dependencyGroupId(String dependenciesPath) {
-		return dependenciesPath
-				+ "/*[local-name()='dependency'][*[local-name()='groupId']='" + SPRING_BOOT_GROUP_ID + "']";
-	}
-
-	private static String[] compilerPluginValue(String configurationElement) {
-		String plugin = "/*[local-name()='plugin'][*[local-name()='artifactId']='maven-compiler-plugin']"
-				+ "/*[local-name()='configuration']/*[local-name()='" + configurationElement + "']";
-		return new String[] {
-				PROJECT + "/*[local-name()='build']/*[local-name()='plugins']" + plugin,
-				PROJECT + "/*[local-name()='build']/*[local-name()='pluginManagement']/*[local-name()='plugins']" + plugin
-		};
-	}
-
-	private static String firstText(XPath xpath, Document document, String... expressions) throws XPathExpressionException {
-		for (String expression : expressions) {
-			String value = text(xpath, document, expression);
-			if (value != null) {
-				return value;
+	private static Element findCompilerPluginConfigurationIn(Element plugins) {
+		if (plugins == null) {
+			return null;
+		}
+		for (Element plugin : childElements(plugins, "plugin")) {
+			if ("maven-compiler-plugin".equals(childText(plugin, "artifactId"))) {
+				return childElement(plugin, "configuration");
 			}
 		}
 		return null;
 	}
 
-	private static String text(XPath xpath, Document document, String expression) throws XPathExpressionException {
-		String value = (String) xpath.evaluate(expression, document, XPathConstants.STRING);
-		if (value == null || value.isBlank()) {
-			return null;
-		}
-		return value.trim();
+	private static boolean hasSpringBootDependency(Element project) {
+		return hasSpringBootDependencyIn(childElement(project, "dependencies"))
+				|| hasSpringBootDependencyIn(dependencyManagementDependencies(project));
 	}
 
-	private static boolean exists(XPath xpath, Document document, String expression) throws XPathExpressionException {
-		return (Boolean) xpath.evaluate("boolean(" + expression + ")", document, XPathConstants.BOOLEAN);
+	private static Element dependencyManagementDependencies(Element project) {
+		Element dependencyManagement = childElement(project, "dependencyManagement");
+		return dependencyManagement == null ? null : childElement(dependencyManagement, "dependencies");
+	}
+
+	private static boolean hasSpringBootDependencyIn(Element dependencies) {
+		if (dependencies == null) {
+			return false;
+		}
+		for (Element dependency : childElements(dependencies, "dependency")) {
+			if (SPRING_BOOT_GROUP_ID.equals(childText(dependency, "groupId"))) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Plain DOM child-element lookups are used instead of javax.xml.xpath: the JDK's built-in
+	 * Xalan-derived XPath engine relies on dynamically instantiated internal classes and resource
+	 * bundles that GraalVM native-image does not include by default, and chasing each missing
+	 * reflection/resource entry individually is a losing game. Maven POMs never use namespace
+	 * prefixes, so plain tag-name matching is equivalent to the local-name()-based XPath this
+	 * replaces.
+	 */
+	private static Element childElement(Element parent, String tagName) {
+		if (parent == null) {
+			return null;
+		}
+		for (Node node = parent.getFirstChild(); node != null; node = node.getNextSibling()) {
+			if (node instanceof Element element && tagName.equals(element.getTagName())) {
+				return element;
+			}
+		}
+		return null;
+	}
+
+	private static List<Element> childElements(Element parent, String tagName) {
+		List<Element> elements = new ArrayList<>();
+		if (parent == null) {
+			return elements;
+		}
+		for (Node node = parent.getFirstChild(); node != null; node = node.getNextSibling()) {
+			if (node instanceof Element element && tagName.equals(element.getTagName())) {
+				elements.add(element);
+			}
+		}
+		return elements;
+	}
+
+	private static String childText(Element parent, String tagName) {
+		Element element = childElement(parent, tagName);
+		if (element == null) {
+			return null;
+		}
+		String text = element.getTextContent();
+		if (text == null || text.isBlank()) {
+			return null;
+		}
+		return text.trim();
 	}
 }

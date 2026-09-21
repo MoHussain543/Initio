@@ -6,7 +6,7 @@ import picocli.CommandLine.Command;
 @Command(
 		name = "initio",
 		mixinStandardHelpOptions = true,
-		version = "0.0.1-SNAPSHOT",
+		versionProvider = InitioVersionProvider.class,
 		description = "Local-first developer environment diagnostic and project onboarding tool.",
 		subcommands = {
 				CheckCommand.class,
