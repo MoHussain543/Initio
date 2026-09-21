@@ -101,17 +101,33 @@
     const issueCount = typeof readiness.issueCount === "number" ? readiness.issueCount : 0;
     const scoreLabel = scored ? escapeHtml(String(score)) + "%" : "Unknown";
     const fill = scored ? Math.min(100, Math.max(0, score)) : 0;
+    const bucket = readinessBucket(scored ? score : null);
+    const bucketSuffix = bucket ? " readiness-score--" + bucket : "";
+    const fillSuffix = bucket ? " progress-fill--" + bucket : "";
 
     readinessBody.innerHTML =
-      '<div class="readiness-score" aria-label="Readiness score">' +
+      '<div class="readiness-score' + bucketSuffix + '" aria-label="Readiness score">' +
       scoreLabel +
       "</div>" +
       '<div class="progress-track" aria-hidden="true">' +
-      '<div class="progress-fill" style="width:' +
+      '<div class="progress-fill' + fillSuffix + '" style="width:' +
       fill +
       '%"></div></div>' +
       (summary ? '<p class="readiness-summary">' + escapeHtml(summary) + "</p>" : "") +
       '<p class="readiness-meta">' + escapeHtml(formatIssueMeta(issueCount)) + "</p>";
+  }
+
+  function readinessBucket(score) {
+    if (score === null) {
+      return "";
+    }
+    if (score >= 80) {
+      return "good";
+    }
+    if (score >= 50) {
+      return "warning";
+    }
+    return "bad";
   }
 
   function renderConfiguration(configuration) {

@@ -2,23 +2,72 @@
   --font-sans: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, monospace;
 
-  --color-bg: #f4f6f9;
-  --color-surface: #ffffff;
-  --color-border: #e2e8f0;
-  --color-text: #0f172a;
-  --color-muted: #64748b;
-  --color-accent: #2563eb;
-  --color-accent-hover: #1d4ed8;
-  --color-success: #059669;
-  --color-warning: #d97706;
-  --color-error: #dc2626;
-  --color-info-bg: #eff6ff;
-  --color-error-bg: #fef2f2;
-  --color-loading-bg: #f8fafc;
-
   --radius: 10px;
-  --shadow: 0 1px 3px rgb(15 23 42 / 8%);
   --max-width: 1100px;
+
+  /* Light theme (default) */
+  --color-bg: #faf9fc;
+  --color-surface: #ffffff;
+  --color-border: #e6e1f0;
+  --color-text: #1c1327;
+  --color-muted: #6b6478;
+  --color-accent: #7c3aed;
+  --color-accent-hover: #6d28d9;
+  --color-accent-soft: #f1e9fe;
+  --color-success: #16a34a;
+  --color-success-bg: #dcfce7;
+  --color-success-border: #86efac;
+  --color-warning: #d97706;
+  --color-warning-bg: #fef3c7;
+  --color-error: #dc2626;
+  --color-error-bg: #fee2e2;
+  --color-error-border: #fecaca;
+  --color-loading-bg: #f8f7fb;
+  --shadow: 0 1px 3px rgb(28 19 39 / 8%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-bg: #000000;
+    --color-surface: #17141f;
+    --color-border: #2e2a3a;
+    --color-text: #f3f0f9;
+    --color-muted: #a39dae;
+    --color-accent: #a78bfa;
+    --color-accent-hover: #c4b5fd;
+    --color-accent-soft: rgb(167 139 250 / 16%);
+    --color-success: #4ade80;
+    --color-success-bg: rgb(74 222 128 / 16%);
+    --color-success-border: rgb(74 222 128 / 35%);
+    --color-warning: #fbbf24;
+    --color-warning-bg: rgb(251 191 36 / 16%);
+    --color-error: #f87171;
+    --color-error-bg: rgb(248 113 113 / 16%);
+    --color-error-border: rgb(248 113 113 / 35%);
+    --color-loading-bg: #0e0c14;
+    --shadow: 0 1px 3px rgb(0 0 0 / 60%);
+  }
+}
+
+:root[data-theme="dark"] {
+  --color-bg: #000000;
+  --color-surface: #17141f;
+  --color-border: #2e2a3a;
+  --color-text: #f3f0f9;
+  --color-muted: #a39dae;
+  --color-accent: #a78bfa;
+  --color-accent-hover: #c4b5fd;
+  --color-accent-soft: rgb(167 139 250 / 16%);
+  --color-success: #4ade80;
+  --color-success-bg: rgb(74 222 128 / 16%);
+  --color-success-border: rgb(74 222 128 / 35%);
+  --color-warning: #fbbf24;
+  --color-warning-bg: rgb(251 191 36 / 16%);
+  --color-error: #f87171;
+  --color-error-bg: rgb(248 113 113 / 16%);
+  --color-error-border: rgb(248 113 113 / 35%);
+  --color-loading-bg: #0e0c14;
+  --shadow: 0 1px 3px rgb(0 0 0 / 60%);
 }
 
 *,
@@ -29,6 +78,7 @@
 
 html {
   font-size: 16px;
+  color-scheme: light dark;
 }
 
 body {
@@ -38,6 +88,7 @@ body {
   background: var(--color-bg);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 h1, h2, h3 {
@@ -62,4 +113,46 @@ button {
 .placeholder {
   color: var(--color-muted);
   font-size: 0.9375rem;
+}
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-muted);
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.theme-toggle:hover {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.theme-toggle svg {
+  width: 1.125rem;
+  height: 1.125rem;
+  stroke: currentColor;
+  fill: none;
+}
+
+.theme-toggle .icon-sun {
+  display: none;
+}
+
+.theme-toggle .icon-moon {
+  display: block;
+}
+
+:root[data-theme="dark"] .theme-toggle .icon-sun {
+  display: block;
+}
+
+:root[data-theme="dark"] .theme-toggle .icon-moon {
+  display: none;
 }

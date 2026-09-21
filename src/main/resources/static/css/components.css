@@ -14,7 +14,7 @@
 .status-banner--error {
   background: var(--color-error-bg);
   color: var(--color-error);
-  border-color: #fecaca;
+  border-color: var(--color-error-border);
 }
 
 .status-banner code {
@@ -51,13 +51,6 @@
   margin-bottom: 0;
 }
 
-.panel-issues h2 {
-  color: var(--color-text);
-  font-size: 0.9375rem;
-  text-transform: none;
-  letter-spacing: -0.01em;
-}
-
 .readiness-panel .panel-head h2 {
   font-size: 1rem;
   text-transform: none;
@@ -70,6 +63,19 @@
   font-weight: 700;
   letter-spacing: -0.04em;
   line-height: 1;
+  color: var(--color-text);
+}
+
+.readiness-score--good {
+  color: var(--color-success);
+}
+
+.readiness-score--warning {
+  color: var(--color-warning);
+}
+
+.readiness-score--bad {
+  color: var(--color-error);
 }
 
 .readiness-summary {
@@ -94,9 +100,21 @@
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--color-accent), #3b82f6);
+  background: var(--color-accent);
   border-radius: 999px;
-  transition: width 0.35s ease;
+  transition: width 0.35s ease, background-color 0.15s ease;
+}
+
+.progress-fill--good {
+  background: var(--color-success);
+}
+
+.progress-fill--warning {
+  background: var(--color-warning);
+}
+
+.progress-fill--bad {
+  background: var(--color-error);
 }
 
 .btn {
@@ -205,12 +223,12 @@
 }
 
 .status-icon--ok {
-  background: #d1fae5;
+  background: var(--color-success-bg);
   color: var(--color-success);
 }
 
 .status-icon--bad {
-  background: #fee2e2;
+  background: var(--color-error-bg);
   color: var(--color-error);
 }
 
@@ -276,10 +294,6 @@
   font-size: 0.75rem;
   color: var(--color-muted);
   text-transform: capitalize;
-}
-
-.panel-issues {
-  border-color: #cbd5e1;
 }
 
 .issue-list {
@@ -352,17 +366,17 @@
 }
 
 .badge--error {
-  background: #fee2e2;
+  background: var(--color-error-bg);
   color: var(--color-error);
 }
 
 .badge--warning {
-  background: #fef3c7;
+  background: var(--color-warning-bg);
   color: var(--color-warning);
 }
 
 .badge--info {
-  background: var(--color-info-bg);
+  background: var(--color-accent-soft);
   color: var(--color-accent);
 }
 
@@ -433,12 +447,12 @@
 }
 
 .btn-copy:hover {
-  background: var(--color-info-bg);
+  background: var(--color-accent-soft);
 }
 
 .btn-copy--done {
   color: var(--color-success);
-  border-color: #a7f3d0;
+  border-color: var(--color-success-border);
 }
 
 .ci-list {

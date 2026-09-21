@@ -11,9 +11,13 @@
 .brand {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
+  align-items: center;
   gap: 0.5rem 1rem;
   margin-bottom: 0.75rem;
+}
+
+.brand-tagline {
+  margin-right: auto;
 }
 
 .brand-mark {
