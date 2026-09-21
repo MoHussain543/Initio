@@ -180,7 +180,7 @@ Requires JDK 25. Tests run on any JDK; building the native executable requires [
 ./mvnw -Pnative native:compile           # build target/initio (needs GraalVM)
 ```
 
-Releases are built and published by [`.github/workflows/release.yml`](.github/workflows/release.yml) on version tags.
+Releases are built and published by [`.github/workflows/release.yml`](.github/workflows/release.yml) on version tags. See [`docs/RELEASING.md`](docs/RELEASING.md) for the full release process, including the manual Homebrew tap update.
 
 ## License
 
