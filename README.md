@@ -39,9 +39,16 @@ No issues detected.
 
 ## Install
 
+### Homebrew (macOS / Linux)
+
+```bash
+brew install MoHussain543/tap/initio
+initio --version
+```
+
 ### Direct download
 
-Download the archive for your platform from the [latest release](https://github.com/MoHussain543/Initio/releases/latest):
+For Windows, or if you'd rather not use Homebrew, download the archive for your platform from the [latest release](https://github.com/MoHussain543/Initio/releases/latest):
 
 | Platform | Archive |
 | --- | --- |
