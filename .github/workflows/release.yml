@@ -1,0 +1,240 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  GRAALVM_VERSION: "25"
+  GRAALVM_DISTRIBUTION: "graalvm-community"
+
+jobs:
+  validate:
+    name: Validate release tag
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate tag is a semantic version
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::Tag '$TAG' is not a valid semantic version (expected vX.Y.Z)"
+            exit 1
+          fi
+          echo "Tag '$TAG' is a valid semantic version."
+
+      - name: Set up JDK
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.GRAALVM_VERSION }}
+          distribution: temurin
+          cache: maven
+
+      - name: Validate pom.xml version matches the tag
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          POM_VERSION=$(./mvnw -q -B help:evaluate -Dexpression=project.version -DforceStdout)
+          if [ "$TAG_VERSION" != "$POM_VERSION" ]; then
+            echo "::error::pom.xml version ($POM_VERSION) does not match tag version ($TAG_VERSION). Update pom.xml before tagging."
+            exit 1
+          fi
+          echo "pom.xml version ($POM_VERSION) matches tag version ($TAG_VERSION)."
+
+  build:
+    name: Build (${{ matrix.platform }}-${{ matrix.arch }})
+    needs: validate
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-14
+            platform: macos
+            arch: arm64
+            archive_ext: tar.gz
+            binary: initio
+          - os: macos-15-intel
+            platform: macos
+            arch: x64
+            archive_ext: tar.gz
+            binary: initio
+          - os: ubuntu-latest
+            platform: linux
+            arch: x64
+            archive_ext: tar.gz
+            binary: initio
+          - os: windows-latest
+            platform: windows
+            arch: x64
+            archive_ext: zip
+            binary: initio.exe
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up GraalVM
+        uses: graalvm/setup-graalvm@v1
+        with:
+          java-version: ${{ env.GRAALVM_VERSION }}
+          distribution: ${{ env.GRAALVM_DISTRIBUTION }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          cache: maven
+
+      - name: Set up Visual Studio developer environment (Windows)
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Run tests (Unix)
+        if: runner.os != 'Windows'
+        run: ./mvnw -B test
+
+      - name: Run tests (Windows)
+        if: runner.os == 'Windows'
+        run: ./mvnw.cmd -B test
+
+      - name: Build native executable (Unix)
+        if: runner.os != 'Windows'
+        run: ./mvnw -B -Pnative -DskipTests native:compile
+
+      - name: Build native executable (Windows)
+        if: runner.os == 'Windows'
+        run: ./mvnw.cmd -B -Pnative -DskipTests native:compile
+
+      - name: Smoke test (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          ./target/initio --version
+          ./target/initio --help
+          ./target/initio info src/test/resources/fixtures/spring-maven
+          ./target/initio check src/test/resources/fixtures/spring-maven
+
+      - name: Smoke test (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          ./target/initio.exe --version
+          ./target/initio.exe --help
+          ./target/initio.exe info src/test/resources/fixtures/spring-maven
+          ./target/initio.exe check src/test/resources/fixtures/spring-maven
+
+      - name: Smoke test dashboard (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          ./target/initio dashboard --port 7331 src/test/resources/fixtures/spring-maven &
+          DASHBOARD_PID=$!
+          for i in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:7331/api/v1/analysis > /dev/null 2>&1; then
+              echo "Dashboard responded successfully."
+              break
+            fi
+            if [ "$i" -eq 20 ]; then
+              echo "::error::Dashboard did not respond in time"
+              kill "$DASHBOARD_PID" 2>/dev/null || true
+              exit 1
+            fi
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:7331/ > /dev/null
+          kill "$DASHBOARD_PID"
+
+      - name: Smoke test dashboard (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $process = Start-Process -FilePath ".\target\initio.exe" -ArgumentList "dashboard","--port","7331","src/test/resources/fixtures/spring-maven" -PassThru
+          $ready = $false
+          for ($i = 0; $i -lt 20; $i++) {
+            try {
+              Invoke-WebRequest -Uri "http://127.0.0.1:7331/api/v1/analysis" -UseBasicParsing | Out-Null
+              $ready = $true
+              break
+            } catch {
+              Start-Sleep -Seconds 1
+            }
+          }
+          if (-not $ready) {
+            Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+            throw "Dashboard did not respond in time"
+          }
+          Invoke-WebRequest -Uri "http://127.0.0.1:7331/" -UseBasicParsing | Out-Null
+          Stop-Process -Id $process.Id -Force
+
+      - name: Package archive (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          ARCHIVE="initio-${{ github.ref_name }}-${{ matrix.platform }}-${{ matrix.arch }}.tar.gz"
+          tar -czf "$ARCHIVE" -C target "${{ matrix.binary }}"
+          echo "ARCHIVE=$ARCHIVE" >> "$GITHUB_ENV"
+
+      - name: Package archive (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $archive = "initio-${{ github.ref_name }}-${{ matrix.platform }}-${{ matrix.arch }}.zip"
+          Compress-Archive -Path "target/${{ matrix.binary }}" -DestinationPath $archive
+          echo "ARCHIVE=$archive" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Upload archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: initio-${{ matrix.platform }}-${{ matrix.arch }}
+          path: ${{ env.ARCHIVE }}
+          if-no-files-found: error
+
+  checksums:
+    name: Generate checksums
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all archives
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          pattern: "initio-*"
+          merge-multiple: true
+
+      - name: Generate SHA256SUMS
+        working-directory: dist
+        run: sha256sum ./* > SHA256SUMS
+
+      - name: Upload checksums
+        uses: actions/upload-artifact@v4
+        with:
+          name: checksums
+          path: dist/SHA256SUMS
+          if-no-files-found: error
+
+  release:
+    name: Publish GitHub Release
+    needs: [build, checksums]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all release assets
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          pattern: "*"
+          merge-multiple: true
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Initio ${{ github.ref_name }}
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: |
+            dist/initio-*.tar.gz
+            dist/initio-*.zip
+            dist/SHA256SUMS
