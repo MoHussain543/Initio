@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.mbh</groupId>
 	<artifactId>initio</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.1.0</version>
 	<name>Initio</name>
 	<description>Local-first developer environment diagnostic and project onboarding tool.</description>
 	<url/>
