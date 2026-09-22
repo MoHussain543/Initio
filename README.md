@@ -37,6 +37,10 @@ Verified: 2/2 requirements
 No issues detected.
 ```
 
+The same analysis is also available as a local web dashboard (`initio dashboard`), with light and dark themes:
+
+![Initio dashboard](docs/images/dashboard.png)
+
 ## Install
 
 ### Homebrew (macOS / Linux)
