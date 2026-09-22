@@ -139,6 +139,16 @@ Initio reads what's already in the repository — it does not ask you to describ
 
 It then checks that against your machine: installed runtimes and versions, running Compose services, occupied ports, and present/missing environment variables.
 
+### Current limitations
+
+Initio does not detect every language or framework. Notably:
+
+- **No Gradle support** — only Maven (`pom.xml`) is detected for Java/Kotlin projects. Gradle-based projects (including Android) currently get no stack detection at all.
+- **No Python, Go, Rust, Ruby, PHP, or .NET/C# detection.**
+- Local runtime verification (actually checking what's installed on your machine) only covers **Java, Node, and Docker**, even for ecosystems Initio does detect.
+
+If your project falls outside Java/Maven, Node, or Spring Boot, Initio will likely report little or nothing — that's a gap, not a sign your project is fine. `initio.yml` (see below) can fill in some of this manually, but there's no substitute for real detection yet.
+
 ## Optional configuration
 
 Initio works with zero configuration. If detection misses something, add an `initio.yml` to the repository root:
