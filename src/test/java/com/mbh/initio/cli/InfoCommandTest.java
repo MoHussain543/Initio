@@ -32,8 +32,8 @@ class InfoCommandTest {
 		assertTrue(output.stdout().contains("CI"));
 		assertTrue(output.stdout().contains("Java 25"));
 		assertTrue(output.stdout().contains("./mvnw test"));
-		assertTrue(output.stdout().contains("Commands"));
-		assertTrue(output.stdout().contains("initio commands"));
+		assertTrue(output.stdout().contains("Tasks"));
+		assertTrue(output.stdout().contains("initio tasks"));
 	}
 
 	@Test
@@ -58,7 +58,7 @@ class InfoCommandTest {
 		assertTrue(output.stdout().contains("Vite"));
 		assertTrue(output.stdout().contains("Package managers"));
 		assertTrue(output.stdout().contains("npm"));
-		assertTrue(output.stdout().contains("Commands"));
+		assertTrue(output.stdout().contains("Tasks"));
 		assertTrue(output.stdout().contains("npm run dev"));
 	}
 

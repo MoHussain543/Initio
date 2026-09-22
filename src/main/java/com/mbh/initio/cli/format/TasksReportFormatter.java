@@ -11,7 +11,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-public final class CommandsReportFormatter {
+public final class TasksReportFormatter {
 
 	private static final List<CommandCategory> CATEGORY_ORDER = List.of(
 			CommandCategory.RUN,
@@ -30,8 +30,8 @@ public final class CommandsReportFormatter {
 
 		List<ProjectCommand> commands = analysis.projectCommands();
 		if (commands.isEmpty()) {
-			ReportLayout.section(out, "Commands");
-			out.println("No commands detected");
+			ReportLayout.section(out, "Tasks");
+			out.println("No tasks detected");
 			return;
 		}
 

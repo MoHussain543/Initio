@@ -8,19 +8,19 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class CommandsCommandTest {
+class TasksCommandTest {
 
 	@Test
-	void helpListsCommandsSubcommand() {
+	void helpListsTasksSubcommand() {
 		CommandResult output = InitioCli.execute("--help");
 
 		assertEquals(0, output.exitCode());
-		assertTrue(output.stdout().contains("commands"));
+		assertTrue(output.stdout().contains("tasks"));
 	}
 
 	@Test
-	void commandsListsMavenAndNpmCommandsForFullstackFixture() {
-		CommandResult output = InitioCli.execute("commands", FixtureRepositories.fullstack().toString());
+	void tasksListsMavenAndNpmCommandsForFullstackFixture() {
+		CommandResult output = InitioCli.execute("tasks", FixtureRepositories.fullstack().toString());
 
 		assertEquals(0, output.exitCode());
 		assertTrue(output.stdout().contains("INITIO"));
@@ -31,8 +31,8 @@ class CommandsCommandTest {
 	}
 
 	@Test
-	void commandsListsNpmScriptsForNodeViteFixture() {
-		CommandResult output = InitioCli.execute("commands", FixtureRepositories.nodeVite().toString());
+	void tasksListsNpmScriptsForNodeViteFixture() {
+		CommandResult output = InitioCli.execute("tasks", FixtureRepositories.nodeVite().toString());
 
 		assertEquals(0, output.exitCode());
 		assertTrue(output.stdout().contains("npm run dev"));
@@ -41,8 +41,8 @@ class CommandsCommandTest {
 	}
 
 	@Test
-	void commandsListsMakefileTargets() {
-		CommandResult output = InitioCli.execute("commands", FixtureRepositories.makeTargets().toString());
+	void tasksListsMakefileTargets() {
+		CommandResult output = InitioCli.execute("tasks", FixtureRepositories.makeTargets().toString());
 
 		assertEquals(0, output.exitCode());
 		assertTrue(output.stdout().contains("make test"));
@@ -50,8 +50,8 @@ class CommandsCommandTest {
 	}
 
 	@Test
-	void commandsListsConfiguredCommandsFromInitioYml() {
-		CommandResult output = InitioCli.execute("commands", FixtureRepositories.withInitioConfig().toString());
+	void tasksListsConfiguredCommandsFromInitioYml() {
+		CommandResult output = InitioCli.execute("tasks", FixtureRepositories.withInitioConfig().toString());
 
 		assertEquals(0, output.exitCode());
 		assertTrue(output.stdout().contains("./scripts/integration-test.sh"));
@@ -60,8 +60,8 @@ class CommandsCommandTest {
 	}
 
 	@Test
-	void commandsFailsCleanlyWhenInitioYmlIsInvalid() {
-		CommandResult output = InitioCli.execute("commands", FixtureRepositories.invalidInitioConfig().toString());
+	void tasksFailsCleanlyWhenInitioYmlIsInvalid() {
+		CommandResult output = InitioCli.execute("tasks", FixtureRepositories.invalidInitioConfig().toString());
 
 		assertEquals(1, output.exitCode());
 		assertTrue(output.stderr().contains("Initio could not analyze this project"));

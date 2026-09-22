@@ -110,11 +110,11 @@ public final class InfoReportFormatter {
 			return;
 		}
 		ReportLayout.blank(out);
-		out.println("Commands");
+		out.println("Tasks");
 		for (ProjectCommand command : commands) {
 			out.println(command.command());
 		}
-		out.println("Run initio commands for the full list.");
+		out.println("Run initio tasks for the full list.");
 	}
 
 	private static List<ProjectCommand> commandSummary(List<ProjectCommand> commands) {

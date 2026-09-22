@@ -10,11 +10,11 @@ import picocli.CommandLine.Command;
 		description = "Local-first developer environment diagnostic and project onboarding tool.",
 		subcommands = {
 				CheckCommand.class,
-				CommandsCommand.class,
 				ConfigCommand.class,
 				DashboardCommand.class,
 				DoctorCommand.class,
-				InfoCommand.class
+				InfoCommand.class,
+				TasksCommand.class
 		}
 )
 public class InitioCommand implements Runnable {

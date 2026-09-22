@@ -90,7 +90,7 @@
     renderServices(data.services);
     renderPorts(data.ports);
     renderIssues(data.issues);
-    renderCommands(data.commands);
+    renderTasks(data.commands);
     renderCi(data.ci);
   }
 
@@ -340,17 +340,17 @@
       "</ul>";
   }
 
-  function renderCommands(commands) {
-    const el = section("commands");
+  function renderTasks(commands) {
+    const el = section("tasks");
     if (!el) {
       return;
     }
     if (!commands || commands.length === 0) {
-      el.innerHTML = emptyState("No commands detected");
+      el.innerHTML = emptyState("No tasks detected");
       return;
     }
 
-    const grouped = groupCommands(commands);
+    const grouped = groupTasks(commands);
     let html = "";
     for (const category of COMMAND_CATEGORY_ORDER) {
       const list = grouped[category];
@@ -427,7 +427,7 @@
       "</ul>";
   }
 
-  function groupCommands(commands) {
+  function groupTasks(commands) {
     const grouped = {};
     const sorted = commands.slice().sort((a, b) => {
       const ca = COMMAND_CATEGORY_ORDER.indexOf(a.category);

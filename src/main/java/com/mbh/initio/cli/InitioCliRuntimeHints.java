@@ -16,12 +16,12 @@ public class InitioCliRuntimeHints implements RuntimeHintsRegistrar {
 	private static final Class<?>[] REFLECTIVELY_CONSTRUCTED_TYPES = {
 			InitioCommand.class,
 			CheckCommand.class,
-			CommandsCommand.class,
 			ConfigCommand.class,
 			ConfigValidateCommand.class,
 			DashboardCommand.class,
 			DoctorCommand.class,
 			InfoCommand.class,
+			TasksCommand.class,
 			InitioVersionProvider.class
 	};
 

@@ -3,7 +3,7 @@ package com.mbh.initio.cli;
 import com.mbh.initio.analysis.ProjectAnalysisEnricher;
 import com.mbh.initio.analysis.ProjectAnalyzer;
 import com.mbh.initio.analysis.ProjectAnalyzers;
-import com.mbh.initio.cli.format.CommandsReportFormatter;
+import com.mbh.initio.cli.format.TasksReportFormatter;
 import com.mbh.initio.detector.DetectionException;
 import com.mbh.initio.model.ProjectAnalysis;
 import com.mbh.initio.projectconfig.InitioConfigException;
@@ -16,10 +16,10 @@ import java.nio.file.Path;
 import java.util.concurrent.Callable;
 
 @Command(
-		name = "commands",
-		description = "List build, test, and run commands detected in this repository."
+		name = "tasks",
+		description = "List build, test, and run tasks detected in this repository."
 )
-public class CommandsCommand implements Callable<Integer> {
+public class TasksCommand implements Callable<Integer> {
 
 	@Spec
 	private CommandSpec spec;
@@ -34,15 +34,15 @@ public class CommandsCommand implements Callable<Integer> {
 	private final ProjectAnalyzer projectAnalyzer;
 	private final ProjectAnalysisEnricher projectAnalysisEnricher;
 
-	public CommandsCommand() {
+	public TasksCommand() {
 		this(ProjectAnalyzers.create(), new ProjectAnalysisEnricher());
 	}
 
-	CommandsCommand(ProjectAnalyzer projectAnalyzer) {
+	TasksCommand(ProjectAnalyzer projectAnalyzer) {
 		this(projectAnalyzer, new ProjectAnalysisEnricher());
 	}
 
-	CommandsCommand(ProjectAnalyzer projectAnalyzer, ProjectAnalysisEnricher projectAnalysisEnricher) {
+	TasksCommand(ProjectAnalyzer projectAnalyzer, ProjectAnalysisEnricher projectAnalysisEnricher) {
 		this.projectAnalyzer = projectAnalyzer;
 		this.projectAnalysisEnricher = projectAnalysisEnricher;
 	}
@@ -53,7 +53,7 @@ public class CommandsCommand implements Callable<Integer> {
 			Path projectPath = ProjectPathResolver.resolve(path);
 			ProjectAnalysis detected = projectAnalyzer.analyze(projectPath);
 			ProjectAnalysis analysis = projectAnalysisEnricher.enrich(detected).project();
-			new CommandsReportFormatter().write(analysis, spec.commandLine().getOut());
+			new TasksReportFormatter().write(analysis, spec.commandLine().getOut());
 			return 0;
 		} catch (IllegalArgumentException | DetectionException | InitioConfigException exception) {
 			spec.commandLine().getErr().println(exception.getMessage());

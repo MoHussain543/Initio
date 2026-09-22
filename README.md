@@ -93,7 +93,7 @@ cd ~/Projects/my-app
 initio info       # what this project is built with
 initio check      # declared requirements vs. your machine
 initio doctor     # problems, with suggested fixes
-initio commands   # how to build, test, and run this project
+initio tasks      # how to build, test, and run this project
 ```
 
 For a browser view of the same analysis:
@@ -111,7 +111,7 @@ Then open http://127.0.0.1:7331.
 | `initio info [path]` | Show detected project information — languages, frameworks, build tools, services, CI. |
 | `initio check [path]` | Analyze the repository and show declared requirements against your local environment. |
 | `initio doctor [path]` | List environment problems and suggested fixes, with a readiness score. |
-| `initio commands [path]` | List build, test, and run commands detected in this repository. |
+| `initio tasks [path]` | List build, test, and run tasks detected in this repository. |
 | `initio dashboard [path]` | Start the local web dashboard for one project. |
 | `initio config validate [path]` | Validate an optional `initio.yml`. |
 
